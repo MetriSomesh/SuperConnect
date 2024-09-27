@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       if (!updateUser) {
         await prisma.$disconnect();
         return NextResponse.redirect(
-          "https://c91b-2401-4900-1c8e-f048-1582-c137-5ecd-c2c1.ngrok-free.app/unsucessful"
+          "https://7f8c-2401-4900-1c9b-daa3-efb-1319-90bc-939e.ngrok-free.app/unsucessful"
         );
       }
 
@@ -105,11 +105,11 @@ export async function GET(request: NextRequest) {
       // session.user.refreshToken = refresh_token;
 
       return NextResponse.redirect(
-        "https://c91b-2401-4900-1c8e-f048-1582-c137-5ecd-c2c1.ngrok-free.app/connectaccount"
+        "https://7f8c-2401-4900-1c9b-daa3-efb-1319-90bc-939e.ngrok-free.app/connectaccount"
       );
     } else {
       return NextResponse.redirect(
-        "https://c91b-2401-4900-1c8e-f048-1582-c137-5ecd-c2c1.ngrok-free.app/unsucessful"
+        "https://7f8c-2401-4900-1c9b-daa3-efb-1319-90bc-939e.ngrok-free.app/unsucessful"
       );
     }
   } catch (error) {

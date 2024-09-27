@@ -21,18 +21,36 @@ model User{
   interests String[] @default([])
   profileaPic String?
   bio String?
+  twitter Twitter?
   accessToken String @default("")
   refreshToken String @default("")
   AIDescription String?
-  Recommendations Recommendations[] 
   Connections Connections[]
+  Recommendations Recommendations[] 
   Invitation Invitation[]
+}
+
+model Twitter{
+  id Int @id @default(autoincrement())
+  userId Int  @unique
+  user User @relation(fields: [userId],references: [id])
+  account_id BigInt?
+  username String?
+  location String?
+  descripiton String?
+  name String?
 }
 
 model Connections{
   id Int @id @default(autoincrement())
   userId Int
   user User @relation(fields: [userId],references: [id])
+  account_id BigInt?
+  username String?
+  location String?
+  followers Int?
+  descripiton String?
+  name String?
 }
 
 model Recommendations {

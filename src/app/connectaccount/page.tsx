@@ -24,8 +24,12 @@ export default function ConnectAccount() {
         try {
           const res = await axios.post("/api/getTwitterTokens", {
             email: session.user.email,
-          }); // Adjust the endpoint accordingly
-          setAccessToken(res.data.accessToken);
+          });
+          const token = res.data.accessToken;
+          if (token) {
+            setAccessToken(token);
+            await fetchAndSaveTwitterProfile(token); // Fetch and save the Twitter profile
+          }
         } catch (error) {
           console.error("Error fetching access token:", error);
         }
@@ -34,6 +38,26 @@ export default function ConnectAccount() {
 
     fetchAccessToken();
   }, [session]);
+
+  // Function to fetch and save the Twitter profile
+  const fetchAndSaveTwitterProfile = async (token: string) => {
+    try {
+      const res = await axios.post("/api/fetchTwitter", { accessToken: token });
+      const twitterData = res.data;
+
+      // Save Twitter data to DB
+      await axios.post("/api/saveTwitterProfile", {
+        userId: parseInt(session?.user?.id || ""), // Assuming you have access to session user ID
+        account_id: parseInt(twitterData.data.id),
+        username: twitterData.data.username,
+        name: twitterData.data.name,
+        descripiton: twitterData.data.description,
+        location: twitterData.data.location,
+      });
+    } catch (error) {
+      console.error("Error fetching and saving Twitter profile:", error);
+    }
+  };
 
   const handleConnectTwitter = async () => {
     const res = await axios.get("/api/twitter/auth");
@@ -58,11 +82,7 @@ export default function ConnectAccount() {
   };
 
   const handleNext = () => {
-    if (isAtLeastOneConnected) {
-      // Proceed to the next step (handle navigation here, e.g., router.push("/nextpage"))
-      console.log("Navigating to the next page");
-      router.push("/analyse");
-    }
+    router.push("/analyse");
   };
 
   return (
@@ -101,35 +121,7 @@ export default function ConnectAccount() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-lg">Connect Facebook</span>
-              <Button
-                onClick={() => handleAccountConnect("facebook")}
-                className={`${
-                  connectedAccounts.facebook
-                    ? "bg-green-600 hover:bg-green-500"
-                    : "bg-blue-700 hover:bg-blue-600"
-                }`}
-              >
-                <FaFacebook className="mr-2 text-lg" />
-                {connectedAccounts.facebook ? "Connected" : "Connect"}
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-lg">Connect Instagram</span>
-              <Button
-                onClick={() => handleAccountConnect("instagram")}
-                className={`${
-                  connectedAccounts.instagram
-                    ? "bg-green-600 hover:bg-green-500"
-                    : "bg-pink-500 hover:bg-pink-400"
-                }`}
-              >
-                <FaInstagram className="mr-2 text-lg" />
-                {connectedAccounts.instagram ? "Connected" : "Connect"}
-              </Button>
-            </div>
+            {/* Add Facebook and Instagram as well */}
           </div>
 
           <Button

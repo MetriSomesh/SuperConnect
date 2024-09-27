@@ -6,6 +6,18 @@ import { FaSpinner, FaCheckCircle } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
+interface TwitterTokens {
+  accessToken: string;
+  // Add other properties if there are any
+}
+
+interface TwitterData {
+  data: {
+    description: string;
+    // Add other properties if there are any
+  };
+}
+
 export default function SequentialApiCalls() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -18,6 +30,9 @@ export default function SequentialApiCalls() {
     false,
   ]);
   const [error, setError] = useState(false);
+  const [twitterTokens, setTwitterTokens] = useState<TwitterTokens | null>(
+    null
+  );
 
   const apiCalls = [
     { text: "Getting Twitter Tokens...", api: "/api/getTwitterTokens" },
@@ -26,85 +41,64 @@ export default function SequentialApiCalls() {
     { text: "Saving Analysis Data...", api: "/api/saveAnalysis" },
   ];
 
-  const email = session?.user?.email; // Fetch the user's email from the session
+  const email = session?.user?.email;
   const prompt =
     "Analyze the user's Twitter profile description and suggest improvements.";
 
   const callApi = async () => {
     try {
-      setLoadingText(apiCalls[0].text);
+      if (step === 0) {
+        setLoadingText(apiCalls[0].text);
+        const tokenResponse = await fetch(apiCalls[0].api, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        if (!tokenResponse.ok) throw new Error("Error in Step 1");
+        const tokenData: TwitterTokens = await tokenResponse.json();
+        setTwitterTokens(tokenData);
+        setCompletedSteps((prev) => [true, ...prev.slice(1)]);
+        setStep(1);
+      } else if (step === 1 && twitterTokens) {
+        setLoadingText(apiCalls[1].text);
+        const twitterResponse = await fetch(apiCalls[1].api, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken: twitterTokens.accessToken }),
+        });
+        if (!twitterResponse.ok) throw new Error("Error in Step 2");
+        const twitterData: TwitterData = await twitterResponse.json();
+        setCompletedSteps((prev) => [prev[0], true, prev[2], prev[3]]);
+        setStep(2);
 
-      // Step 1: Get Twitter Tokens
-      const tokenResponse = await fetch(apiCalls[0].api, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      if (!tokenResponse.ok) throw new Error("Error in Step 1");
-      const tokenData = await tokenResponse.json();
+        // Continue with steps 3 and 4...
+        setLoadingText(apiCalls[2].text);
+        const analysisResponse = await fetch(apiCalls[2].api, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            twitterDescription: twitterData.data.description,
+            prompt: prompt,
+          }),
+        });
+        if (!analysisResponse.ok) throw new Error("Error in Step 3");
+        const analysisData = await analysisResponse.json();
+        setCompletedSteps((prev) => [prev[0], prev[1], true, prev[3]]);
+        setStep(3);
 
-      setCompletedSteps((prev) => {
-        const newSteps = [...prev];
-        newSteps[0] = true;
-        return newSteps;
-      });
-      setStep(1);
-
-      // Step 2: Fetch Twitter Data
-      setLoadingText(apiCalls[1].text);
-      const twitterResponse = await fetch(apiCalls[1].api, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessToken: tokenData.accessToken }),
-      });
-      if (!twitterResponse.ok) throw new Error("Error in Step 2");
-      const twitterData = await twitterResponse.json();
-
-      setCompletedSteps((prev) => {
-        const newSteps = [...prev];
-        newSteps[1] = true;
-        return newSteps;
-      });
-      setStep(2);
-
-      // Step 3: Analyze Social Data
-      setLoadingText(apiCalls[2].text);
-      const analysisResponse = await fetch(apiCalls[2].api, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          twitterDescription: twitterData.description,
-          prompt: prompt,
-        }),
-      });
-      if (!analysisResponse.ok) throw new Error("Error in Step 3");
-      const analysisData = await analysisResponse.json();
-
-      setCompletedSteps((prev) => {
-        const newSteps = [...prev];
-        newSteps[2] = true;
-        return newSteps;
-      });
-      setStep(3);
-
-      // Step 4: Save Analysis
-      setLoadingText(apiCalls[3].text);
-      const saveResponse = await fetch(apiCalls[3].api, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email,
-          ai_description: analysisData.analysis,
-        }),
-      });
-      if (!saveResponse.ok) throw new Error("Error in Step 4");
-
-      setCompletedSteps((prev) => {
-        const newSteps = [...prev];
-        newSteps[3] = true;
-        return newSteps;
-      });
-      setStep(4);
+        setLoadingText(apiCalls[3].text);
+        const saveResponse = await fetch(apiCalls[3].api, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            ai_description: analysisData.analysis,
+          }),
+        });
+        if (!saveResponse.ok) throw new Error("Error in Step 4");
+        setCompletedSteps((prev) => [prev[0], prev[1], prev[2], true]);
+        setStep(4);
+      }
     } catch (error) {
       console.error("API Error:", error);
       setError(true);
@@ -112,7 +106,6 @@ export default function SequentialApiCalls() {
   };
 
   useEffect(() => {
-    // Ensure the session has loaded and email is available before starting the API calls
     if (
       status === "authenticated" &&
       email &&
