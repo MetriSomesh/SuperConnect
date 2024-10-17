@@ -74,7 +74,7 @@ export default function ConnectAccount() {
   );
 
   const handleNext = () => {
-    router.push("/analyse");
+    router.push("/dashboard");
   };
 
   return (

@@ -11,6 +11,11 @@ export default function Home() {
     window.location.href = "/signin";
   };
 
+  const handleSignUp = () => {
+    // Redirect to the Sign In page
+    window.location.href = "/signup";
+  };
+
   return (
     <div className="min-h-screen bg-darkBg text-lightText">
       <Head>
@@ -43,12 +48,12 @@ export default function Home() {
           >
             Contact
           </a>
-          <a
-            href="#"
+          <button
             className="px-4 py-2 ml-4 bg-primary text-darkBg rounded-lg font-bold"
+            onClick={handleSignUp}
           >
             Sign Up
-          </a>
+          </button>
           {session ? (
             <button
               className="px-4 py-2 ml-4 bg-red-500 text-darkBg rounded-lg font-bold"

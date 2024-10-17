@@ -35,7 +35,7 @@ export default function SignIn() {
       if (session?.user?.id) {
         const userId = session.user.id;
         recommendConnections(userId);
-        router.push("/dashboard");
+        router.push("/setupaccount");
       }
     }
   };
