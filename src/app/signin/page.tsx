@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import recommendConnections from "../lib/recommendationLogic";
-// Import the recommendation logic
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -18,32 +16,25 @@ export default function SignIn() {
   const router = useRouter();
 
   const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
     const res = await signIn("credentials", {
       email,
       password,
-      redirect: false, // Prevent auto-redirect for handling custom UI behavior
+      redirect: false,
     });
 
     if (res?.error) {
       setError("Sign-in failed. Please check your credentials.");
       console.error("Sign-in error:", res.error);
     } else {
-      console.log("Sign-in successful:", res);
-
-      // Fetch user session after login to get the user ID
       const session = await fetch("/api/auth/session").then((res) =>
         res.json()
       );
 
       if (session?.user?.id) {
         const userId = session.user.id;
-
-        // Trigger the recommendation logic with the user ID
         recommendConnections(userId);
-
-        // Redirect to the setup account page
         router.push("/dashboard");
       }
     }

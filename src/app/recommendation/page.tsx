@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
@@ -9,6 +8,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 import { getSession } from "next-auth/react";
 
+// Define interfaces for the user and recommendation
 interface RecommendedUser {
   userId: number;
   name: string;
@@ -20,6 +20,15 @@ interface RecommendedUser {
 interface Recommendation {
   matchingPercentage: number;
   recommendedUser: RecommendedUser;
+}
+
+// Type for API response
+interface ConnectionResponse {
+  id: number;
+  username: string;
+  bio: string;
+  followers_count: number;
+  name: string;
 }
 
 const RecommendationPage = () => {
@@ -35,23 +44,19 @@ const RecommendationPage = () => {
       try {
         // Get session or hardcoded user
         const session = await getSession();
-        const currentUserId: string | 1 = session?.user?.id || 1;
-        setUserId(
-          typeof currentUserId === "string"
-            ? parseInt(currentUserId)
-            : currentUserId
-        );
+        const currentUserId: number = parseInt(session?.user?.id || "1");
+        setUserId(currentUserId);
 
         // First, check if there are connections of connections in the DB
-        const connectionCheckResponse = await axios.post(
+        const connectionCheckResponse = await axios.post<ConnectionResponse[]>(
           "/api/getConnectionsofConnections",
-          { userId: userId }
+          { userId: currentUserId }
         );
 
-        if (connectionCheckResponse.data?.data?.length > 0) {
+        if (connectionCheckResponse.data?.length > 0) {
           // If data exists, map and render the recommendations from the DB
-          const recommendationsFromDb = connectionCheckResponse.data.data.map(
-            (connection: any) => ({
+          const recommendationsFromDb = connectionCheckResponse.data.map(
+            (connection) => ({
               matchingPercentage: Math.random(), // Dummy matching logic
               recommendedUser: {
                 userId: connection.id,
@@ -65,20 +70,20 @@ const RecommendationPage = () => {
           setRecommendations(recommendationsFromDb);
         } else {
           // Fetch account IDs for connections from the API
-          const accountIdsResponse = await axios.post(
+          const accountIdsResponse = await axios.post<number[]>(
             "/api/getConnectionsAccountId",
             { userId: currentUserId }
           );
-          const accountIds = accountIdsResponse.data.data;
+          const accountIds = accountIdsResponse.data;
 
           const newRecommendations: Recommendation[] = [];
 
           for (const accountId of accountIds) {
-            const twitterResponse = await axios.get(
+            const twitterResponse = await axios.get<any>(
               `https://api.socialdata.tools/twitter/followers/list?user_id=${accountId}`,
               {
                 headers: {
-                  Authorization: `Bearer 816|uDVquPB05o55uj8i7zpDuE1yX5fXyLMDuO6COGN218b55c2f`, // Use your actual API key
+                  Authorization: `Bearer YOUR_API_KEY_HERE`, // Use your actual API key
                   Accept: "application/json",
                 },
               }
@@ -91,7 +96,7 @@ const RecommendationPage = () => {
               userId: currentUserId,
               followers: followers.map((follower: any) => ({
                 connectionId: accountId,
-                userId: currentUserId,
+                userId: follower.id,
               })),
             });
 

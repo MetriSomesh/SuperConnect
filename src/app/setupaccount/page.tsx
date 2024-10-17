@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -22,14 +21,13 @@ export default function SetupAccount() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [username, setUsername] = useState("");
-  const [bio, setBio] = useState("");
-  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [username, setUsername] = useState<string>("");
+  const [bio, setBio] = useState<string>("");
+  const [profileaPic, setProfileaPic] = useState<string>("");
   const [interests, setInterests] = useState<string[]>([]);
-  const [profession, setProfession] = useState("");
-  const [profileaPic, setProfileaPic] = useState("");
-  const [error, setError] = useState("");
-  const [email, setEmail] = useState("");
+  const [profession, setProfession] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
 
   // Set email when session is available
   useEffect(() => {
@@ -49,7 +47,7 @@ export default function SetupAccount() {
   }
 
   // Form validation
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     if (
       !username ||
       !bio ||
@@ -102,7 +100,6 @@ export default function SetupAccount() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setProfilePicture(file);
 
       try {
         const formData = new FormData();
@@ -186,7 +183,7 @@ export default function SetupAccount() {
             <Input
               id="profession"
               type="text"
-              placeholder="Tell us about yourself"
+              placeholder="Your profession"
               value={profession}
               onChange={(e) => setProfession(e.target.value)}
               required
@@ -202,10 +199,8 @@ export default function SetupAccount() {
               id="interests"
               options={interestsOptions}
               isMulti
-              onChange={(selectedOptions: any) => {
-                setInterests(
-                  selectedOptions.map((option: any) => option.value)
-                );
+              onChange={(selectedOptions) => {
+                setInterests(selectedOptions.map((option) => option.value));
               }}
               className="mt-1 w-full"
               styles={{

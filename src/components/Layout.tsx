@@ -1,9 +1,12 @@
-// @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation"; // usePathname for current path
 import { FaUser, FaBell, FaCog, FaUsers, FaStream } from "react-icons/fa";
 
-const Layout = ({ children }: any) => {
+interface LayoutProps {
+  children: ReactNode; // Use ReactNode for children
+}
+
+const Layout = ({ children }: LayoutProps) => {
   const router = useRouter();
   const pathname = usePathname(); // Get current route path
   const [activeSection, setActiveSection] = useState("Dashboard");

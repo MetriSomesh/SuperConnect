@@ -6,7 +6,7 @@ export default function Dashboard() {
     <Layout>
       <h1 className="text-3xl font-bold text-[#A688FA] mb-10">Dashboard</h1>
       <p className="text-gray-400">
-        Welcome to your dashboard! Here, you'll see analytics.
+        Welcome to your dashboard! Here, you&apos;ll see analytics.
       </p>
     </Layout>
   );

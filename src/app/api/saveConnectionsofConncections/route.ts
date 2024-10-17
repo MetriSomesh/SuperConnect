@@ -4,6 +4,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
+interface Follower {
+  id_str: string;
+  description: string;
+  followers_count: number;
+  location: string | null;
+  screen_name: string;
+  name: string;
+}
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -16,7 +24,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const connectionsData = followers.map((follower: any) => ({
+    const connectionsData = followers.map((follower: Follower) => ({
       userId,
       connectionId: connectionId, // Assuming this is the ID of the connection
     }));

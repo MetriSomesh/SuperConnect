@@ -1,11 +1,12 @@
-// @ts-nocheck
 import CredentialsProviders from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-
 import { PrismaClient } from "@prisma/client";
+import { NextAuthOptions, Session } from "next-auth"; // Import necessary types
+import { User as NextAuthUser } from "next-auth"; // Import user type
 
 const prisma = new PrismaClient();
-export const NEXT_AUTH = {
+
+export const NEXT_AUTH: NextAuthOptions = {
   providers: [
     CredentialsProviders({
       name: "Email",
@@ -21,7 +22,12 @@ export const NEXT_AUTH = {
           placeholder: "Enter your password",
         },
       },
-      async authorize(credentials: any) {
+      async authorize(credentials) {
+        if (!credentials) {
+          console.error("Credentials are undefined.");
+          return null; // Handle undefined credentials
+        }
+
         try {
           // Attempt to connect to the database
           await prisma.$connect();
@@ -50,7 +56,7 @@ export const NEXT_AUTH = {
           return {
             id: user.id.toString(),
             email: user.email,
-          };
+          } as NextAuthUser; // Type assertion for the user
         } catch (error) {
           // Log any errors during the authorization process
           console.error("Error during authorization: ", error);
@@ -64,14 +70,14 @@ export const NEXT_AUTH = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async session({ session, token }: any) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.email = token.email;
+    async session({ session, token }) {
+      if (token && token.id && token.email) {
+        session.user.id = token.id.toString(); // TypeScript recognizes 'token' as possibly undefined
+        session.user.email = token.email?.toString(); // TypeScript recognizes 'token' as possibly undefined
       }
       return session;
     },
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;

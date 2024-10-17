@@ -54,6 +54,7 @@ export default function ConnectAccount() {
         descripiton: twitterData.data.description,
         location: twitterData.data.location,
       });
+      setConnectedAccounts((prev) => ({ ...prev, twitter: true }));
     } catch (error) {
       console.error("Error fetching and saving Twitter profile:", error);
     }

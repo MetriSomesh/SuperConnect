@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -15,9 +14,17 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    interface Follower {
+      id_str: string;
+      description: string;
+      followers_count: number;
+      location: string | null;
+      screen_name: string;
+      name: string;
+    }
 
     // Extract necessary fields from each follower
-    const connectionsData = followers.map((follower: any) => ({
+    const connectionsData = followers.map((follower: Follower) => ({
       userId, // The ID of the current user
       account_id: follower.id_str,
       descripiton: follower.description,
