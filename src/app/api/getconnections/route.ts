@@ -1,3 +1,4 @@
+// app/api/getConnections/route.ts
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -15,15 +16,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const connections = await prisma.connections.findMany({
-      where: { userId: Number(userId) },
-      include: {
-        user: true, // Include related user info if needed
-      },
+    await prisma.$connect();
+    const connections = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { Connections: true },
     });
+    await prisma.$disconnect();
 
-    return NextResponse.json(connections);
+    return NextResponse.json(connections || []);
   } catch (error) {
+    await prisma.$disconnect();
     console.error("Error fetching connections:", error);
     return NextResponse.json(
       { error: "Error fetching connections" },

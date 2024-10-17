@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       if (!updateUser) {
         await prisma.$disconnect();
         return NextResponse.redirect(
-          "https://7f8c-2401-4900-1c9b-daa3-efb-1319-90bc-939e.ngrok-free.app/unsucessful"
+          "https://lynx-polite-personally.ngrok-free.app/unsucessful"
         );
       }
 
@@ -105,11 +105,11 @@ export async function GET(request: NextRequest) {
       // session.user.refreshToken = refresh_token;
 
       return NextResponse.redirect(
-        "https://7f8c-2401-4900-1c9b-daa3-efb-1319-90bc-939e.ngrok-free.app/connectaccount"
+        "https://lynx-polite-personally.ngrok-free.app/connectaccount"
       );
     } else {
       return NextResponse.redirect(
-        "https://7f8c-2401-4900-1c9b-daa3-efb-1319-90bc-939e.ngrok-free.app/unsucessful"
+        "https://lynx-polite-personally.ngrok-free.app/unsucessful"
       );
     }
   } catch (error) {

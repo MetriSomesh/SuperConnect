@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         receiverId: parseInt(userId),
       },
       include: {
-        sender: {
+        user: {
           select: {
             id: true,
             username: true,

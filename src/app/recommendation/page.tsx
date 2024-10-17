@@ -1,23 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Layout from "@/components/Layout"; // Assuming Layout is in the components folder
+import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HiUserCircle } from "react-icons/hi"; // Importing an icon from React Icons
+import { HiUserCircle } from "react-icons/hi";
 import { useRouter } from "next/navigation";
-import ClipLoader from "react-spinners/ClipLoader"; // Using react-spinners ClipLoader
-import { getSession } from "next-auth/react"; // For fetching the user session
-import axios from "axios"; // Importing axios
+import ClipLoader from "react-spinners/ClipLoader";
+import axios from "axios";
+import { getSession } from "next-auth/react";
 
-// Define the type for a recommendation object
 interface RecommendedUser {
-  userId: number; // Updated to match your API
-  email: string;
+  userId: number;
+  name: string;
   username: string;
   bio: string;
-  interests: string[];
-  AIDescription: string | null; // This can be null in your API
-  profilePic: string | null; // This can be null in your API
+  followers_count: number;
 }
 
 interface Recommendation {
@@ -27,71 +24,114 @@ interface Recommendation {
 
 const RecommendationPage = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [loading, setLoading] = useState<boolean>(true); // Loading state
-  const [error, setError] = useState<string | null>(null); // Error state
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const router = useRouter();
 
-  // Function to fetch recommendations
-  const fetchRecommendations = async (userId: number) => {
-    try {
-      const response = await axios.post("/api/recommendation", {
-        currentUserId: userId,
-      });
-
-      const recommendationData = response.data.recommendations.map(
-        (rec: any) => ({
-          matchingPercentage: rec.matchingPercentage,
-          recommendedUser: {
-            userId: rec.userId,
-            email: rec.email,
-            username: rec.username,
-            bio: rec.bio,
-            interests: rec.interests,
-            AIDescription: rec.AIDescription,
-            profilePic: rec.profilePic,
-          },
-        })
-      );
-
-      setRecommendations(recommendationData);
-    } catch (error) {
-      console.error("Error fetching recommendations:", error);
-      setError("An error occurred while fetching recommendations.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Get the user session and fetch recommendations
   useEffect(() => {
-    const loadRecommendations = async () => {
-      setLoading(true);
+    const fetchData = async () => {
+      try {
+        // Get session or hardcoded user
+        const session = await getSession();
+        const currentUserId: string | 1 = session?.user?.id || 1;
+        setUserId(
+          typeof currentUserId === "string"
+            ? parseInt(currentUserId)
+            : currentUserId
+        );
 
-      // Fetch the session and get userId
-      const session = await getSession();
-      const userId = session?.user?.id; // Assuming `id` is part of the session
+        // First, check if there are connections of connections in the DB
+        const connectionCheckResponse = await axios.post(
+          "/api/getConnectionsofConnections",
+          { userId: currentUserId }
+        );
 
-      if (userId) {
-        await fetchRecommendations(parseInt(userId));
-      } else {
-        setError("User session not found.");
+        if (connectionCheckResponse.data?.data?.length > 0) {
+          // If data exists, map and render the recommendations from the DB
+          const recommendationsFromDb = connectionCheckResponse.data.data.map(
+            (connection: any) => ({
+              matchingPercentage: Math.random(), // Dummy matching logic
+              recommendedUser: {
+                userId: connection.id,
+                username: connection.username,
+                bio: connection.bio,
+                followers_count: connection.followers_count,
+                name: connection.name,
+              },
+            })
+          );
+          setRecommendations(recommendationsFromDb);
+        } else {
+          // Fetch account IDs for connections from the API
+          const accountIdsResponse = await axios.post(
+            "/api/getConnectionsAccountId",
+            { userId: currentUserId }
+          );
+          const accountIds = accountIdsResponse.data.data;
+
+          const newRecommendations: Recommendation[] = [];
+
+          for (const accountId of accountIds) {
+            const twitterResponse = await axios.get(
+              `https://api.socialdata.tools/twitter/followers/list?user_id=${accountId}`,
+              {
+                headers: {
+                  Authorization: `Bearer 816|uDVquPB05o55uj8i7zpDuE1yX5fXyLMDuO6COGN218b55c2f`, // Use your actual API key
+                  Accept: "application/json",
+                },
+              }
+            );
+
+            const followers = twitterResponse.data.users;
+
+            // Save the fetched followers as connections of connections
+            await axios.post("/api/saveConnectionsOfConnections", {
+              userId: currentUserId,
+              followers: followers.map((follower: any) => ({
+                connectionId: accountId,
+                userId: currentUserId,
+              })),
+            });
+
+            // Add these followers to recommendations list
+            followers.forEach((follower: any) => {
+              newRecommendations.push({
+                matchingPercentage: Math.random(), // Dummy matching logic
+                recommendedUser: {
+                  userId: follower.id,
+                  username: follower.screen_name,
+                  bio: follower.description,
+                  followers_count: follower.followers_count,
+                  name: follower.name,
+                },
+              });
+            });
+          }
+
+          setRecommendations(newRecommendations);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching recommendations:", error);
+        setError("Failed to fetch recommendations.");
         setLoading(false);
       }
     };
 
-    loadRecommendations();
+    fetchData();
   }, []);
 
   const handleCardClick = (userId: number) => {
-    router.push(`/profile/${userId}`); // Navigate to the user's profile page
+    router.push(`/profile/${userId}`);
   };
 
   if (loading) {
     return (
       <Layout>
         <div className="flex items-center justify-center h-screen">
-          <ClipLoader color="#36d7b7" loading={loading} size={50} />
+          <ClipLoader color="#A688FA" loading={loading} size={50} />
         </div>
       </Layout>
     );
@@ -125,8 +165,11 @@ const RecommendationPage = () => {
                   <HiUserCircle className="w-16 h-16 text-gray-300" />
                 </div>
                 <CardTitle className="text-xl font-bold">
-                  {rec.recommendedUser.username}
+                  {rec.recommendedUser.name}
                 </CardTitle>
+                <p className="text-gray-400 text-sm">
+                  @{rec.recommendedUser.username}
+                </p>
                 <p className="text-gray-400 text-sm">
                   {Math.round(rec.matchingPercentage * 100)}% Match
                 </p>

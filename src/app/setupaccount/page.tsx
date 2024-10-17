@@ -25,6 +25,7 @@ export default function SetupAccount() {
   const [bio, setBio] = useState("");
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [interests, setInterests] = useState<string[]>([]);
+  const [profession, setProfession] = useState("");
   const [profileaPic, setProfileaPic] = useState("");
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
@@ -48,7 +49,13 @@ export default function SetupAccount() {
 
   // Form validation
   const validateForm = () => {
-    if (!username || !bio || interests.length === 0 || !profileaPic) {
+    if (
+      !username ||
+      !bio ||
+      interests.length === 0 ||
+      !profileaPic ||
+      !profession
+    ) {
       setError("All fields are mandatory. Please fill in all the fields.");
       return false;
     }
@@ -73,6 +80,7 @@ export default function SetupAccount() {
         interests,
         email,
         profileaPic,
+        profession,
       });
 
       if (response.status === 200) {
@@ -165,6 +173,21 @@ export default function SetupAccount() {
               placeholder="Tell us about yourself"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
+              required
+              className="mt-1 w-full bg-[#1f1f1f] border-gray-600 focus:border-[#A688FA]"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="profession" className="block text-sm font-medium">
+              Profession
+            </Label>
+            <Input
+              id="profession"
+              type="text"
+              placeholder="Tell us about yourself"
+              value={profession}
+              onChange={(e) => setProfession(e.target.value)}
               required
               className="mt-1 w-full bg-[#1f1f1f] border-gray-600 focus:border-[#A688FA]"
             />

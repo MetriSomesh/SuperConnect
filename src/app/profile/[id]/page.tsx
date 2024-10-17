@@ -41,18 +41,21 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
   }, [session, params.id]);
 
   const handleConnect = async () => {
-    try {
-      const response = await axios.post(`/api/sendInvitation`, {
-        receiverId: parseInt(params.id),
-        senderId: parseInt(session?.user.id || ""),
-      });
+    // try {
+    //   const response = await axios.post(`/api/sendInvitation`, {
+    //     receiverId: parseInt(params.id),
+    //     senderId: parseInt(session?.user.id || ""),
+    //   });
 
-      if (response.status === 200) {
-        setIsInvited(true);
-      }
-    } catch (error) {
-      console.error("Error sending invitation:", error);
-    }
+    //   if (response.status === 200) {
+    //     setIsInvited(true);
+    //   }
+    // } catch (error) {
+    //   console.error("Error sending invitation:", error);
+    // }
+    setTimeout(() => {
+      setIsInvited(true);
+    }, 3000);
   };
 
   if (!profileData) {

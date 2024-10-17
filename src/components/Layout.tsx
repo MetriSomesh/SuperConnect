@@ -17,8 +17,9 @@ const Layout = ({ children }: any) => {
   const sidebarItems = [
     { name: "Profile", icon: <FaUser />, path: "/profile/3" },
     { name: "Recommendation", icon: <FaStream />, path: "/recommendation" },
-    { name: "Connections", icon: <FaUsers />, path: "/connections" },
-    { name: "Messages", icon: <FaComments />, path: "/messages" },
+    { name: "Social Connections", icon: <FaUsers />, path: "/connections" },
+    { name: "Invitations", icon: <FaUsers />, path: "/invitations" }, // New Invitations Section
+    { name: "Groups", icon: <FaUsers />, path: "/groups" }, // New Groups Section
     { name: "Notifications", icon: <FaBell />, path: "/notifications" },
     { name: "Settings", icon: <FaCog />, path: "/settings" },
   ];

@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 export const POST = async (req: NextRequest) => {
   const body = await req.json();
 
-  const { username, interests, bio, email, profileaPic } = body;
+  const { username, interests, bio, email, profileaPic, profession } = body;
   await prisma.$connect();
 
   try {
@@ -18,6 +18,7 @@ export const POST = async (req: NextRequest) => {
           bio: bio,
           interests: interests,
           profileaPic: profileaPic,
+          profession: profession,
         },
       });
       await prisma.$disconnect();

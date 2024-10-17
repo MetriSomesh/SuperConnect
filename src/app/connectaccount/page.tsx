@@ -48,7 +48,7 @@ export default function ConnectAccount() {
       // Save Twitter data to DB
       await axios.post("/api/saveTwitterProfile", {
         userId: parseInt(session?.user?.id || ""), // Assuming you have access to session user ID
-        account_id: parseInt(twitterData.data.id),
+        account_id: twitterData.data.id.toString(),
         username: twitterData.data.username,
         name: twitterData.data.name,
         descripiton: twitterData.data.description,

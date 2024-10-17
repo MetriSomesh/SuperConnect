@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await prisma.$connect();
     const twitterProfile = await prisma.twitter.create({
       data: {
         user: { connect: { id: userId } },
@@ -27,15 +26,17 @@ export async function POST(req: NextRequest) {
         location,
       },
     });
-    await prisma.$disconnect();
 
     return NextResponse.json(twitterProfile);
-  } catch (error) {
-    await prisma.$disconnect();
+  } catch (error: any) {
     console.error("Error saving Twitter profile:", error);
+
     return NextResponse.json(
-      { error: "Error saving Twitter profile" },
+      { error: "Error saving Twitter profile", details: error.message },
       { status: 500 }
     );
+  } finally {
+    // Always disconnect Prisma to avoid connection leaks
+    await prisma.$disconnect();
   }
 }
