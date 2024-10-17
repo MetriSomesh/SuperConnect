@@ -16,17 +16,13 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(response.data);
-  } catch (error: any) {
-    console.error(
-      "Error fetching user profile:",
-      error.response?.data || error.message
-    );
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
     return NextResponse.json(
       {
-        message: "Error fetching user profile",
-        error: error.response?.data || error.message,
+        error: error,
       },
-      { status: error.response?.status || 500 }
+      { status: 500 }
     );
   }
 }

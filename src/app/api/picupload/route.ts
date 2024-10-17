@@ -3,7 +3,7 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
-export const POST = async (req: NextRequest, res: NextResponse) => {
+export const POST = async (req: NextRequest) => {
   try {
     const formData = await req.formData();
     const file: File | null = formData.get("image") as unknown as File;

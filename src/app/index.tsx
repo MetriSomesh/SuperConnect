@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Menu } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,11 +9,15 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const AppBar = ({ toggleDarkMode, isDarkMode }: any) => (
+interface AppBarProps {
+  toggleDarkMode: () => void;
+  isDarkMode: boolean;
+}
+
+const AppBar: React.FC<AppBarProps> = ({ toggleDarkMode, isDarkMode }) => (
   <header className="flex justify-between items-center p-4 bg-background">
     <h1 className="text-2xl font-bold text-primary">AI Automation</h1>
     <nav className="flex items-center space-x-4">

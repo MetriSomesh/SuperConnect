@@ -1,13 +1,7 @@
+// @ts-nocheck
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation"; // usePathname for current path
-import {
-  FaUser,
-  FaBell,
-  FaCog,
-  FaComments,
-  FaUsers,
-  FaStream,
-} from "react-icons/fa";
+import { FaUser, FaBell, FaCog, FaUsers, FaStream } from "react-icons/fa";
 
 const Layout = ({ children }: any) => {
   const router = useRouter();

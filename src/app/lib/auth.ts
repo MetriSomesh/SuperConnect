@@ -1,3 +1,4 @@
+// @ts-nocheck
 import CredentialsProviders from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 

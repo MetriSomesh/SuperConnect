@@ -37,15 +37,12 @@ export async function POST(req: NextRequest) {
 
     // Send the response back to the client
     return NextResponse.json({ response: gptResponse });
-  } catch (error: any) {
-    console.error(
-      "Error communicating with OpenAI:",
-      error.response?.data || error.message
-    );
+  } catch (error) {
+    console.error("Error communicating with OpenAI:", error);
     return NextResponse.json(
       {
         message: "Error processing request",
-        error: error.response?.data || error.message,
+        error: error,
       },
       { status: 500 }
     );

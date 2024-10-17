@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const state = Math.random().toString(36).substring(7);
 
   // Generate code_verifier and code_challenge

@@ -28,13 +28,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(twitterProfile);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error saving Twitter profile:", error);
 
-    return NextResponse.json(
-      { error: "Error saving Twitter profile", details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error }, { status: 500 });
   } finally {
     // Always disconnect Prisma to avoid connection leaks
     await prisma.$disconnect();

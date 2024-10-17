@@ -11,7 +11,7 @@ const oauth = new OAuth.OAuth(
   "HMAC-SHA1"
 );
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const [oauthToken, oauthTokenSecret] = await new Promise<[string, string]>(
       (resolve, reject) => {

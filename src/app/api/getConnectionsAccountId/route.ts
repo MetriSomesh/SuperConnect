@@ -40,13 +40,12 @@ export async function POST(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     await prisma.$disconnect();
     console.error("Error fetching account IDs from connections:", error);
     return NextResponse.json(
       {
-        error: "Failed to retrieve account IDs",
-        details: error.message,
+        error: error,
       },
       { status: 500 }
     );

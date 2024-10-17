@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import { FaTwitter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -71,15 +71,6 @@ export default function ConnectAccount() {
   const isAtLeastOneConnected = Object.values(connectedAccounts).some(
     (account) => account === true
   );
-
-  const handleAccountConnect = (
-    account: "twitter" | "facebook" | "instagram"
-  ) => {
-    setConnectedAccounts((prevState) => ({
-      ...prevState,
-      [account]: !prevState[account],
-    }));
-  };
 
   const handleNext = () => {
     router.push("/analyse");

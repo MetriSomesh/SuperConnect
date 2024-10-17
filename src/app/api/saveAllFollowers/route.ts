@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -41,7 +42,9 @@ export async function POST(req: NextRequest) {
     await prisma.$disconnect();
     console.error("Error saving connections:", error);
     return NextResponse.json(
-      { error: "Error saving connections" },
+      {
+        error: error,
+      },
       { status: 500 }
     );
   }

@@ -3,31 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "next-auth/react";
+// import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { PrismaClient } from "@prisma/client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-
-const prisma = new PrismaClient();
 
 export default function SignUp() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const handleGoogleSignUp = () => {
-    signIn("google", { callbackUrl: "/" });
-  };
+  // const handleGoogleSignUp = () => {
+  //   signIn("google", { callbackUrl: "/" });
+  // };
 
-  const handleTwitterSignUp = () => {
-    signIn("twitter", { callbackUrl: "/" });
-  };
+  // const handleTwitterSignUp = () => {
+  //   signIn("twitter", { callbackUrl: "/" });
+  // };
 
-  const handleFacebookSignUp = () => {
-    signIn("facebook", { callbackUrl: "/" });
-  };
+  // const handleFacebookSignUp = () => {
+  //   signIn("facebook", { callbackUrl: "/" });
+  // };
 
   const handleSignUp = async () => {
     try {

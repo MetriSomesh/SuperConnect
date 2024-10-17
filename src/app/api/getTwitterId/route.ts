@@ -1,10 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
-export const POST = async (req: NextRequest, res: NextResponse) => {
+export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
     const { email } = body;
@@ -27,8 +26,13 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
         { status: 404 }
       );
     }
-  } catch (error: any) {
+  } catch (error) {
     await prisma.$disconnect();
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error,
+      },
+      { status: 500 }
+    );
   }
 };

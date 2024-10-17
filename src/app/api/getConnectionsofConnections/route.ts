@@ -56,13 +56,12 @@ export async function POST(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     prisma.$disconnect();
     console.error("Error fetching connections of connections:", error);
     return NextResponse.json(
       {
-        error: "Failed to retrieve connections of connections",
-        details: error.message,
+        error: error,
       },
       { status: 500 }
     );

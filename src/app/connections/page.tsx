@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { getSession } from "next-auth/react";
 import { ClipLoader } from "react-spinners";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { HiUserCircle } from "react-icons/hi";
 import Layout from "@/components/Layout";
 

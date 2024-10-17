@@ -1,5 +1,5 @@
+// @ts-nocheck
 "use client";
-
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,7 +45,7 @@ const RecommendationPage = () => {
         // First, check if there are connections of connections in the DB
         const connectionCheckResponse = await axios.post(
           "/api/getConnectionsofConnections",
-          { userId: currentUserId }
+          { userId: userId }
         );
 
         if (connectionCheckResponse.data?.data?.length > 0) {

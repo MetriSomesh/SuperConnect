@@ -71,6 +71,8 @@ export async function POST(req: NextRequest) {
             },
           });
 
+          console.log(newRecommendation);
+
           // Fetch the full user details
           const userDetails = await prisma.user.findUnique({
             where: { id: user.id },
