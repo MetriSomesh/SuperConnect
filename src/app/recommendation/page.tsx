@@ -22,7 +22,7 @@ interface Recommendation {
   recommendedUser: RecommendedUser;
 }
 
-// Type for API response
+// Type for API response for connections
 interface ConnectionResponse {
   id: number;
   username: string;
@@ -31,12 +31,20 @@ interface ConnectionResponse {
   name: string;
 }
 
+// Define the structure of the followers response from Twitter API
+interface TwitterFollower {
+  id: number;
+  id_str: string;
+  description: string;
+  followers_count: number;
+  screen_name: string;
+  name: string;
+}
+
 const RecommendationPage = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [userId, setUserId] = useState<number | null>(null);
-
   const router = useRouter();
 
   useEffect(() => {
@@ -45,7 +53,6 @@ const RecommendationPage = () => {
         // Get session or hardcoded user
         const session = await getSession();
         const currentUserId: number = parseInt(session?.user?.id || "1");
-        setUserId(currentUserId);
 
         // First, check if there are connections of connections in the DB
         const connectionCheckResponse = await axios.post<ConnectionResponse[]>(
@@ -79,7 +86,9 @@ const RecommendationPage = () => {
           const newRecommendations: Recommendation[] = [];
 
           for (const accountId of accountIds) {
-            const twitterResponse = await axios.get<any>(
+            const twitterResponse = await axios.get<{
+              users: TwitterFollower[];
+            }>(
               `https://api.socialdata.tools/twitter/followers/list?user_id=${accountId}`,
               {
                 headers: {
@@ -94,14 +103,14 @@ const RecommendationPage = () => {
             // Save the fetched followers as connections of connections
             await axios.post("/api/saveConnectionsOfConnections", {
               userId: currentUserId,
-              followers: followers.map((follower: any) => ({
+              followers: followers.map((follower) => ({
                 connectionId: accountId,
                 userId: follower.id,
               })),
             });
 
             // Add these followers to recommendations list
-            followers.forEach((follower: any) => {
+            followers.forEach((follower) => {
               newRecommendations.push({
                 matchingPercentage: Math.random(), // Dummy matching logic
                 recommendedUser: {

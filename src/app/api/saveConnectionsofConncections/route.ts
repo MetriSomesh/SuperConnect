@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,6 +11,7 @@ interface Follower {
   screen_name: string;
   name: string;
 }
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -24,16 +24,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const connectionsData = followers.map((follower: Follower) => ({
-      userId,
-      connectionId: connectionId, // Assuming this is the ID of the connection
-    }));
-
     await prisma.$connect();
 
     // Create multiple connections in a single query
     const newConnections = await prisma.connectionsOfConnections.createMany({
-      data: connectionsData,
+      data: followers.map((follower: Follower) => ({
+        userId,
+        connectionId, // Assuming this is the ID of the connection
+        followerId: follower.id_str, // Example usage of the follower's id_str
+        followerName: follower.name, // Example usage of the follower's name
+        followerScreenName: follower.screen_name, // Example usage of the follower's screen_name
+      })),
       skipDuplicates: true, // Avoid duplicating the same connections
     });
 

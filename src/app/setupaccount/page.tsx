@@ -4,30 +4,38 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Select from "react-select";
+import Select, { MultiValue } from "react-select"; // Import MultiValue type
 import { FaUserCircle } from "react-icons/fa";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-const interestsOptions = [
-  { value: "developer", label: "Developer" },
-  { value: "entertainment", label: "Entertainment" },
-  { value: "movies", label: "Movies" },
-  // Add more interests as needed
-];
+// Define the type for interest options
+interface InterestOption {
+  value: string;
+  label: string;
+}
 
+// Define the component
 export default function SetupAccount() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   const [username, setUsername] = useState<string>("");
   const [bio, setBio] = useState<string>("");
-  const [profileaPic, setProfileaPic] = useState<string>("");
+  const [profilePic, setProfilePic] = useState<string>("");
   const [interests, setInterests] = useState<string[]>([]);
   const [profession, setProfession] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+
+  // Options for the select input
+  const interestsOptions: InterestOption[] = [
+    { value: "developer", label: "Developer" },
+    { value: "entertainment", label: "Entertainment" },
+    { value: "movies", label: "Movies" },
+    // Add more interests as needed
+  ];
 
   // Set email when session is available
   useEffect(() => {
@@ -52,7 +60,7 @@ export default function SetupAccount() {
       !username ||
       !bio ||
       interests.length === 0 ||
-      !profileaPic ||
+      !profilePic ||
       !profession
     ) {
       setError("All fields are mandatory. Please fill in all the fields.");
@@ -78,7 +86,7 @@ export default function SetupAccount() {
         bio,
         interests,
         email,
-        profileaPic,
+        profilePic,
         profession,
       });
 
@@ -86,13 +94,17 @@ export default function SetupAccount() {
         router.push("/connectaccount");
         console.log(response);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Something went wrong: ", error);
 
-      if (error.response && error.response.status === 500) {
-        setError("Database connection failed. Please try again later.");
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 500) {
+          setError("Database connection failed. Please try again later.");
+        } else {
+          setError("Unable to save changes, please try again.");
+        }
       } else {
-        setError("Unable to save changes, please try again.");
+        setError("An unexpected error occurred. Please try again.");
       }
     }
   };
@@ -113,7 +125,7 @@ export default function SetupAccount() {
         const data = await res.json();
 
         if (res.ok && data.imageUrl) {
-          setProfileaPic(data.imageUrl.toString());
+          setProfilePic(data.imageUrl.toString());
         } else {
           throw new Error(data.message || "Error uploading image");
         }
@@ -199,7 +211,7 @@ export default function SetupAccount() {
               id="interests"
               options={interestsOptions}
               isMulti
-              onChange={(selectedOptions) => {
+              onChange={(selectedOptions: MultiValue<InterestOption>) => {
                 setInterests(selectedOptions.map((option) => option.value));
               }}
               className="mt-1 w-full"
