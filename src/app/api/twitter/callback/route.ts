@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       if (!updateUser) {
         await prisma.$disconnect();
         return NextResponse.redirect(
-          "https://lynx-polite-personally.ngrok-free.app/unsucessful"
+          "https://super-connect-git-main-somesh-metris-projects.vercel.app/unsucessful"
         );
       }
 
@@ -105,11 +105,11 @@ export async function GET(request: NextRequest) {
       // session.user.refreshToken = refresh_token;
 
       return NextResponse.redirect(
-        "https://lynx-polite-personally.ngrok-free.app/connectaccount"
+        "https://super-connect-git-main-somesh-metris-projects.vercel.app/connectaccount"
       );
     } else {
       return NextResponse.redirect(
-        "https://lynx-polite-personally.ngrok-free.app/unsucessful"
+        "https://super-connect-git-main-somesh-metris-projects.vercel.app/unsucessful"
       );
     }
   } catch (error) {
