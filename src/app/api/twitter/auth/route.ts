@@ -34,9 +34,11 @@ export async function GET() {
     httpOnly: true,
     secure: true,
   });
+  console.log(response.cookies);
   response.cookies.set("twitter_code_verifier", codeVerifier, {
     httpOnly: true,
     secure: true,
+    sameSite: "lax",
   });
 
   return response;
