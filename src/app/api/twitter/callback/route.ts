@@ -9,10 +9,14 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
+  const combinedState = searchParams.get("state");
+
   // const state = searchParams.get("state");
   const codeVerifier = searchParams.get("twitter_code_verifier");
   const session = await getServerSession(NEXT_AUTH);
-
+  if (!combinedState || !code) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
   if (!codeVerifier) {
     console.log("CODE VERIFIER: ", codeVerifier);
     return NextResponse.json(
@@ -22,6 +26,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const [originalState, codeVerifier] = Buffer.from(combinedState, "base64")
+      .toString("utf8")
+      .split(":");
+    console.log(originalState);
     // Exchange the authorization code for an access token
     const tokenResponse = await axios.post(
       "https://api.twitter.com/2/oauth2/token",

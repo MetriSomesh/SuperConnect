@@ -5,6 +5,10 @@ export async function GET() {
 
   // Generate code_verifier and code_challenge
   const codeVerifier = crypto.randomBytes(32).toString("hex");
+  const combinedState = Buffer.from(`${state}:${codeVerifier}`).toString(
+    "base64"
+  );
+
   const codeChallenge = crypto
     .createHash("sha256")
     .update(codeVerifier)
@@ -24,7 +28,7 @@ export async function GET() {
   authUrl.searchParams.append("twitter_code_verifier", codeVerifier);
   authUrl.searchParams.append("twitter_oauth_state", state);
   authUrl.searchParams.append("scope", "tweet.read users.read offline.access");
-  authUrl.searchParams.append("state", state);
+  authUrl.searchParams.append("state", combinedState);
   authUrl.searchParams.append("code_challenge", codeChallenge);
   authUrl.searchParams.append("code_challenge_method", "S256");
 
