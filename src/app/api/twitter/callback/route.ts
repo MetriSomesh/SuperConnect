@@ -12,17 +12,9 @@ export async function GET(request: NextRequest) {
   const combinedState = searchParams.get("state");
 
   // const state = searchParams.get("state");
-  const codeVerifier = searchParams.get("twitter_code_verifier");
   const session = await getServerSession(NEXT_AUTH);
   if (!combinedState || !code) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
-  if (!codeVerifier) {
-    console.log("CODE VERIFIER: ", codeVerifier);
-    return NextResponse.json(
-      { error: "Missing code verifier" },
-      { status: 400 }
-    );
   }
 
   try {
