@@ -33,11 +33,15 @@ export async function GET() {
   response.cookies.set("twitter_oauth_state", state, {
     httpOnly: true,
     secure: true,
+    path: "/",
+    sameSite: "none",
   });
   console.log(response.cookies);
   response.cookies.set("twitter_code_verifier", codeVerifier, {
     httpOnly: true,
     secure: true,
+    path: "/",
+    sameSite: "none",
   });
 
   return response;
