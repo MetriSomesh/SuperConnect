@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
   const state = searchParams.get("state");
-  const storedState = request.cookies.get("twitter_oauth_state")?.value;
-  const codeVerifier = request.cookies.get("twitter_code_verifier")?.value;
+  const storedState = searchParams.get("twitter_oauth_state");
+  const codeVerifier = searchParams.get("twitter_code_verifier");
   const session = await getServerSession(NEXT_AUTH);
   if (state !== storedState) {
     return NextResponse.json({ error: "Invalid state" }, { status: 400 });
