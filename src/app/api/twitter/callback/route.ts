@@ -9,15 +9,12 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
-  const state = searchParams.get("state");
-  const storedState = searchParams.get("twitter_oauth_state");
+  // const state = searchParams.get("state");
   const codeVerifier = searchParams.get("twitter_code_verifier");
   const session = await getServerSession(NEXT_AUTH);
-  if (state !== storedState) {
-    return NextResponse.json({ error: "Invalid state" }, { status: 400 });
-  }
 
   if (!codeVerifier) {
+    console.log("CODE VERIFIER: ", codeVerifier);
     return NextResponse.json(
       { error: "Missing code verifier" },
       { status: 400 }
