@@ -132,10 +132,10 @@ const RecommendationPage = () => {
           // Fetch followers for each connection
           for (let i = 0; i < accountIds.length; i++) {
             setProgress(`Analyzing connection ${i + 1} of ${totalAccounts}...`);
+            console.log(accountIds[i]);
             const firstLevelFollowers = await fetchFollowersForUser(
               accountIds[i]
             );
-
             // For each first-level follower, fetch their followers
             for (let j = 0; j < Math.min(firstLevelFollowers.length, 5); j++) {
               // Limit to 5 followers per connection
