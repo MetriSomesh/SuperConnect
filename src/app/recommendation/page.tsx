@@ -8,7 +8,6 @@ import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
 import { getSession } from "next-auth/react";
 
-// Define interfaces for the user and recommendation
 interface RecommendedUser {
   userId: number;
   name: string;
@@ -22,7 +21,6 @@ interface Recommendation {
   recommendedUser: RecommendedUser;
 }
 
-// Type for API response for connections
 interface ConnectionResponse {
   id: number;
   username: string;
@@ -31,7 +29,6 @@ interface ConnectionResponse {
   name: string;
 }
 
-// Define the structure of the followers response from Twitter API
 interface TwitterFollower {
   id: number;
   id_str: string;
@@ -45,26 +42,70 @@ const RecommendationPage = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string>("");
   const router = useRouter();
+
+  const fetchFollowersForUser = async (accountId: number) => {
+    try {
+      const response = await axios.post("/api/fetchConnections", {
+        userId: accountId,
+      });
+      return response.data.users || [];
+    } catch (error) {
+      console.error(`Error fetching followers for user ${accountId}:`, error);
+      return [];
+    }
+  };
+
+  const filterRecommendations = (
+    allFollowers: TwitterFollower[],
+    currentUserId: number
+  ) => {
+    // Remove duplicates based on user ID
+    const uniqueFollowers = Array.from(
+      new Map(allFollowers.map((f) => [f.id, f])).values()
+    );
+
+    // Filter out the current user and sort by follower count
+    return uniqueFollowers
+      .filter((f) => f.id !== currentUserId)
+      .sort((a, b) => b.followers_count - a.followers_count);
+  };
+
+  const calculateMatchingPercentage = (
+    follower: TwitterFollower,
+    totalFollowers: number
+  ) => {
+    // Enhanced matching percentage calculation
+    const followerScore = Math.min(follower.followers_count / 1000, 1); // Normalize follower count
+    const randomFactor = 0.3; // Add some randomness to make it more interesting
+    return Math.min(
+      (followerScore + Math.random() * randomFactor) * 0.9, // Cap at 90%
+      1
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get session or hardcoded user
+        setProgress("Initializing...");
         const session = await getSession();
         const currentUserId: number = parseInt(session?.user?.id || "1");
 
-        // First, check if there are connections of connections in the DB
-        const connectionCheckResponse = await axios.post<ConnectionResponse[]>(
+        // First check for existing recommendations
+        const existingRecsResponse = await axios.post<ConnectionResponse[]>(
           "/api/getConnectionsofConnections",
           { userId: currentUserId }
         );
 
-        if (connectionCheckResponse.data?.length > 0) {
-          // If data exists, map and render the recommendations from the DB
-          const recommendationsFromDb = connectionCheckResponse.data.map(
+        if (existingRecsResponse.data?.length > 0) {
+          setProgress("Loading existing recommendations...");
+          const recommendationsFromDb = existingRecsResponse.data.map(
             (connection) => ({
-              matchingPercentage: Math.random(), // Dummy matching logic
+              matchingPercentage: calculateMatchingPercentage(
+                connection as unknown as TwitterFollower,
+                existingRecsResponse.data.length
+              ),
               recommendedUser: {
                 userId: connection.id,
                 username: connection.username,
@@ -76,53 +117,69 @@ const RecommendationPage = () => {
           );
           setRecommendations(recommendationsFromDb);
         } else {
-          // Fetch account IDs for connections from the API
+          // Fetch first-level connections
+          setProgress("Fetching your connections...");
           const accountIdsResponse = await axios.post<number[]>(
             "/api/getConnectionsAccountId",
             { userId: currentUserId }
           );
           const accountIds = accountIdsResponse.data;
 
-          const newRecommendations: Recommendation[] = [];
+          let allFollowersOfFollowers: TwitterFollower[] = [];
+          const totalAccounts = accountIds.length;
 
-          for (const accountId of accountIds) {
-            const twitterResponse = await axios.get<{
-              users: TwitterFollower[];
-            }>(
-              `https://api.socialdata.tools/twitter/followers/list?user_id=${accountId}`,
-              {
-                headers: {
-                  Authorization: `Bearer YOUR_API_KEY_HERE`, // Use your actual API key
-                  Accept: "application/json",
-                },
-              }
+          // Fetch followers for each connection
+          for (let i = 0; i < accountIds.length; i++) {
+            setProgress(`Analyzing connection ${i + 1} of ${totalAccounts}...`);
+            const firstLevelFollowers = await fetchFollowersForUser(
+              accountIds[i]
             );
 
-            const followers = twitterResponse.data.users;
-
-            // Save the fetched followers as connections of connections
-            await axios.post("/api/saveConnectionsOfConnections", {
-              userId: currentUserId,
-              followers: followers.map((follower) => ({
-                connectionId: accountId,
-                userId: follower.id,
-              })),
-            });
-
-            // Add these followers to recommendations list
-            followers.forEach((follower) => {
-              newRecommendations.push({
-                matchingPercentage: Math.random(), // Dummy matching logic
-                recommendedUser: {
-                  userId: follower.id,
-                  username: follower.screen_name,
-                  bio: follower.description,
-                  followers_count: follower.followers_count,
-                  name: follower.name,
-                },
-              });
-            });
+            // For each first-level follower, fetch their followers
+            for (let j = 0; j < Math.min(firstLevelFollowers.length, 5); j++) {
+              // Limit to 5 followers per connection
+              setProgress(
+                `Analyzing followers of connection ${i + 1}: ${j + 1}/5...`
+              );
+              const secondLevelFollowers = await fetchFollowersForUser(
+                firstLevelFollowers[j].id
+              );
+              allFollowersOfFollowers =
+                allFollowersOfFollowers.concat(secondLevelFollowers);
+            }
           }
+
+          setProgress("Processing recommendations...");
+          const filteredFollowers = filterRecommendations(
+            allFollowersOfFollowers,
+            currentUserId
+          );
+
+          // Save to database
+          await axios.post("/api/saveConnectionsOfConnections", {
+            userId: currentUserId,
+            followers: filteredFollowers.map((follower) => ({
+              connectionId: follower.id,
+              userId: follower.id,
+            })),
+          });
+
+          // Create recommendations
+          const newRecommendations = filteredFollowers
+            .slice(0, 50) // Limit to top 50 recommendations
+            .map((follower) => ({
+              matchingPercentage: calculateMatchingPercentage(
+                follower,
+                filteredFollowers.length
+              ),
+              recommendedUser: {
+                userId: follower.id,
+                username: follower.screen_name,
+                bio: follower.description,
+                followers_count: follower.followers_count,
+                name: follower.name,
+              },
+            }));
 
           setRecommendations(newRecommendations);
         }
@@ -144,8 +201,9 @@ const RecommendationPage = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex flex-col items-center justify-center h-screen">
           <ClipLoader color="#A688FA" loading={loading} size={50} />
+          <p className="mt-4 text-white text-center">{progress}</p>
         </div>
       </Layout>
     );
