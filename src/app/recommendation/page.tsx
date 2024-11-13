@@ -168,13 +168,13 @@ const RecommendationPage = () => {
         );
 
         // Save to database
-        await axios.post("/api/saveConnectionsOfConnections", {
-          userId: currentUserId,
-          followers: filteredFollowers.map((follower) => ({
-            connectionId: follower.id,
-            userId: follower.id,
-          })),
-        });
+        // await axios.post("/api/saveConnectionsOfConnections", {
+        //   userId: currentUserId,
+        //   followers: filteredFollowers.map((follower) => ({
+        //     connectionId: follower.id,
+        //     userId: follower.id,
+        //   })),
+        // });
 
         // Create recommendations
         const newRecommendations = filteredFollowers
