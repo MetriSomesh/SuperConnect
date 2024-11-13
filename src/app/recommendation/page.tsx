@@ -90,6 +90,7 @@ const RecommendationPage = () => {
     totalFollowers: number
   ) => {
     // Enhanced matching percentage calculation
+    console.log(totalFollowers);
     const followerScore = Math.min(follower.followers_count / 1000, 1); // Normalize follower count
     const randomFactor = 0.3; // Add some randomness to make it more interesting
     return Math.min(
