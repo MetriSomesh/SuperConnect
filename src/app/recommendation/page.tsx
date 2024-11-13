@@ -81,8 +81,8 @@ const RecommendationPage = () => {
     totalFollowers: number
   ) => {
     console.log(totalFollowers);
-    const followerScore = Math.min(follower.followers_count / 1000, 1);
-    const randomFactor = 0.3;
+    // const followerScore = Math.min(follower.followers_count / 1000, 1);
+    // const randomFactor = 0.3;
     // return Math.min((followerScore + Math.random() * randomFactor) * 0.9, 1);
     return 1;
   };
@@ -146,7 +146,7 @@ const RecommendationPage = () => {
               name: follower.name,
             },
           }));
-
+        console.log("LAST RECOMMENDATION ", newRecommendations);
         setRecommendations(newRecommendations);
         setLoading(false);
       } catch (error) {
