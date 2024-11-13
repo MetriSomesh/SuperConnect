@@ -30,19 +30,10 @@ const RecommendationPage = () => {
 
   const fetchFollowersForUser = async (accountId: string) => {
     try {
-      const response = await axios.post<
-        {
-          id: number;
-          id_str: string;
-          description: string;
-          followers_count: number;
-          screen_name: string;
-          name: string;
-        }[]
-      >("/api/fetchConnections", {
+      const response = await axios.post("/api/fetchConnections", {
         userId: accountId,
       });
-      return response.data || [];
+      return response.data.users || [];
     } catch (error) {
       console.error(`Error fetching followers for user ${accountId}:`, error);
       return [];
