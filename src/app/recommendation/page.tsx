@@ -80,6 +80,7 @@ const RecommendationPage = () => {
     },
     totalFollowers: number
   ) => {
+    console.log(totalFollowers);
     const followerScore = Math.min(follower.followers_count / 1000, 1);
     const randomFactor = 0.3;
     return Math.min((followerScore + Math.random() * randomFactor) * 0.9, 1);
@@ -114,11 +115,13 @@ const RecommendationPage = () => {
           const firstLevelFollowers = await fetchFollowersForUser(
             accountIds[i]
           );
-          firstLevelFollowers.forEach((follower) => {
-            if (!allFollowersOfFollowers.some((f) => f.id === follower.id)) {
-              allFollowersOfFollowers.push(follower);
-            }
-          });
+          // firstLevelFollowers.forEach((follower) => {
+          //   if (!allFollowersOfFollowers.some((f) => f.id === follower.id)) {
+          //     allFollowersOfFollowers.push(follower);
+          //   }
+          // });
+          allFollowersOfFollowers =
+            allFollowersOfFollowers.concat(firstLevelFollowers);
         }
 
         setProgress("Processing recommendations...");
