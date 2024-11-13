@@ -16,15 +16,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Make the API call to fetch connections
-    const response = await axios.post(
-      "https://api.socialdata.tools/twitter/followers/list",
-      { user_id: userId },
+    const response = await axios.get(
+      `https://api.socialdata.tools/twitter/followers/list?user_id=${userId}`,
       {
         headers: {
           Authorization:
             "Bearer 816|uDVquPB05o55uj8i7zpDuE1yX5fXyLMDuO6COGN218b55c2f",
           Accept: "application/json",
-          "Content-Type": "application/json",
         },
       }
     );
