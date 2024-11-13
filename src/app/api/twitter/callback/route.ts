@@ -124,10 +124,6 @@ import { getServerSession } from "next-auth";
 import { NEXT_AUTH } from "@/app/lib/auth";
 
 const prisma = new PrismaClient();
-interface TwitterWebTokens {
-  authToken: string;
-  ct0: string;
-}
 
 async function getTwitterWebTokens(accessToken: string) {
   try {
@@ -219,6 +215,7 @@ export async function GET(request: NextRequest) {
       .split(":");
 
     // Exchange code for tokens
+    console.log(originalState);
     const tokenResponse = await axios.post(
       "https://api.twitter.com/2/oauth2/token",
       new URLSearchParams({
@@ -268,20 +265,14 @@ export async function GET(request: NextRequest) {
     if (session?.user?.email) {
       await prisma.$connect();
 
-      const updateData: any = {
-        accessToken: access_token.toString(),
-        refreshToken: refresh_token.toString(),
-      };
-
-      // Only add web tokens if they were successfully obtained
-      if (webTokens?.authToken && webTokens?.ct0) {
-        updateData.twitterAuthToken = webTokens.authToken;
-        updateData.twitterCsrfToken = webTokens.ct0;
-      }
-
       const updateUser = await prisma.user.update({
         where: { email: session.user.email },
-        data: updateData,
+        data: {
+          accessToken: access_token.toString(),
+          refreshToken: refresh_token.toString(),
+          twitterAuthToken: webTokens?.authToken.toString(),
+          twitterCsrfToken: webTokens?.authToken.toString(),
+        },
       });
 
       await prisma.$disconnect();
