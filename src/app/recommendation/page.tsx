@@ -83,7 +83,8 @@ const RecommendationPage = () => {
     console.log(totalFollowers);
     const followerScore = Math.min(follower.followers_count / 1000, 1);
     const randomFactor = 0.3;
-    return Math.min((followerScore + Math.random() * randomFactor) * 0.9, 1);
+    // return Math.min((followerScore + Math.random() * randomFactor) * 0.9, 1);
+    return 1;
   };
 
   useEffect(() => {
