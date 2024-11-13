@@ -25,6 +25,8 @@ model User{
   twitter Twitter?
   accessToken String @default("")
   refreshToken String @default("")
+  twitterAuthToken String? @default("")
+  twitterCsrfToken String @default("")
   AIDescription String?
   Connections Connections[]
   ConnectionsOfConnections ConnectionsOfConnections[]

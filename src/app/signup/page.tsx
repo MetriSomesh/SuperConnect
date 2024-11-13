@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// import { signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
-
+import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
@@ -14,21 +14,11 @@ export default function SignUp() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const handleGoogleSignUp = () => {
-  //   signIn("google", { callbackUrl: "/" });
-  // };
 
-  // const handleTwitterSignUp = () => {
-  //   signIn("twitter", { callbackUrl: "/" });
-  // };
-
-  // const handleFacebookSignUp = () => {
-  //   signIn("facebook", { callbackUrl: "/" });
-  // };
-
+  // Handle the default email/password sign-up
   const handleSignUp = async () => {
     try {
-      const newUser = await axios.post("api/signup", {
+      const newUser = await axios.post("/api/signup", {
         email,
         password,
       });
@@ -39,6 +29,11 @@ export default function SignUp() {
     } catch (error) {
       console.log("Something went wrong: ", error);
     }
+  };
+
+  // Handle Google sign-up/sign-in
+  const handleGoogleSignUp = () => {
+    signIn("google", { callbackUrl: "/connectaccount" });
   };
 
   return (
@@ -80,38 +75,18 @@ export default function SignUp() {
           </div>
           <Button
             type="submit"
-            className="mt-5 mr-2 mb-5 w-full bg-[#A688FA] hover:bg-secondary"
+            className="mt-5 w-full bg-[#A688FA] hover:bg-secondary"
             onClick={handleSignUp}
           >
             Continue
           </Button>
-          {/* <div className="mt-5 mx-5 flex items-center justify-center ">
-            <Button
-              onClick={handleGoogleSignUp}
-              className="w-full bg-red-600 hover:bg-red-700"
-            >
-              Continue with
-              <FcGoogle className="inline ml-2 text-xl" />
-            </Button>
-          </div>
-          <div className="mt-5 mx-5 flex items-center justify-center">
-            <Button
-              onClick={handleTwitterSignUp}
-              className="w-full bg-blue-500 hover:bg-blue-600"
-            >
-              Continue with
-              <FaXTwitter className="inline ml-2 text-xl" />
-            </Button>
-          </div>
-          <div className="mt-5 mx-5 flex items-center justify-center">
-            <Button
-              onClick={handleFacebookSignUp}
-              className="w-full bg-blue-800 hover:bg-blue-900"
-            >
-              Continue with
-              <FaFacebook className="inline ml-2 text-xl" />
-            </Button>
-          </div> */}
+
+          {/* <Button
+            onClick={handleGoogleSignUp}
+            className="mt-5 w-full bg-[#f25e5e] hover:bg-secondary flex items-center justify-center"
+          >
+            Continue with <FcGoogle className="ml-2 text-xl" />
+          </Button> */}
         </CardContent>
         <p className="text-center text-sm">
           Already have an account?{" "}

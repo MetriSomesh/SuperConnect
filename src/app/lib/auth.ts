@@ -1,8 +1,8 @@
 import CredentialsProviders from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
-import { NextAuthOptions } from "next-auth"; // Import necessary types
-import { User as NextAuthUser } from "next-auth"; // Import user type
+import { NextAuthOptions } from "next-auth";
+import { User as NextAuthUser } from "next-auth";
 
 const prisma = new PrismaClient();
 
@@ -25,24 +25,28 @@ export const NEXT_AUTH: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials) {
           console.error("Credentials are undefined.");
-          return null; // Handle undefined credentials
+          return null;
         }
 
         try {
-          // Attempt to connect to the database
           await prisma.$connect();
 
-          // Check if the user exists
-          const user = await prisma.user.findUnique({
+          let user = await prisma.user.findUnique({
             where: { email: credentials.email },
           });
 
           if (!user) {
-            console.error("No user found with this email.");
-            return null;
+            // New user signup: create the user in the database
+            const hashedPassword = await bcrypt.hash(credentials.password, 10);
+            user = await prisma.user.create({
+              data: {
+                email: credentials.email,
+                password: hashedPassword,
+              },
+            });
           }
 
-          // Validate the password
+          // Validate password for existing users
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
@@ -52,17 +56,12 @@ export const NEXT_AUTH: NextAuthOptions = {
             return null;
           }
 
-          // Return the user's ID and email if everything is valid
-          return {
-            id: user.id.toString(),
-            email: user.email,
-          } as NextAuthUser; // Type assertion for the user
+          // Return user ID and email if authorization is successful
+          return { id: user.id.toString(), email: user.email } as NextAuthUser;
         } catch (error) {
-          // Log any errors during the authorization process
           console.error("Error during authorization: ", error);
           return null;
         } finally {
-          // Ensure the database connection is always closed
           await prisma.$disconnect();
         }
       },
@@ -72,8 +71,8 @@ export const NEXT_AUTH: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (token && token.id && token.email) {
-        session.user.id = token.id.toString(); // TypeScript recognizes 'token' as possibly undefined
-        session.user.email = token.email?.toString(); // TypeScript recognizes 'token' as possibly undefined
+        session.user.id = token.id.toString();
+        session.user.email = token.email?.toString();
       }
       return session;
     },
@@ -84,8 +83,73 @@ export const NEXT_AUTH: NextAuthOptions = {
       }
       return token;
     },
+    async redirect({ url, baseUrl }) {
+      // Redirect to /connectaccount after signup
+      return url === "/signin" ? `${baseUrl}/connectaccount` : url;
+    },
   },
   pages: {
     signIn: "/signin",
+    newUser: "/connectaccount",
   },
 };
+// import { PrismaClient } from "@prisma/client";
+// import { NextAuthOptions } from "next-auth";
+// import GoogleProvider from "next-auth/providers/google";
+// import CredentialsProviders from "next-auth/providers/credentials";
+// import bcrypt from "bcryptjs";
+// import { User as NextAuthUser } from "next-auth";
+
+// const prisma = new PrismaClient();
+
+// export const NEXT_AUTH: NextAuthOptions = {
+//   providers: [
+//     GoogleProvider({
+//       clientId: process.env.GOOGLE_CLIENT_ID!,
+//       clientSecret: "GOCSPXDAHNT4cL0PJzV7FWwgx5QVS7Keh7",
+//     }),
+//     // add other providers as needed
+//   ],
+//   secret: process.env.NEXTAUTH_SECRET,
+//   callbacks: {
+//     async jwt({ token, user }) {
+//       if (user) {
+//         // Check if user exists in the database
+//         let existingUser = await prisma.user.findUnique({
+//           where: { email: user.email },
+//         });
+
+//         // If the user does not exist, create them
+//         if (!existingUser) {
+//           existingUser = await prisma.user.create({
+//             data: {
+//               email: user.email,
+//               password: user.email,
+//               // add any additional fields as needed
+//             },
+//           });
+//         }
+
+//         // Add the user ID to the token for session creation
+//         token.id = existingUser.id;
+//       }
+//       return token;
+//     },
+//     async session({ session, token }) {
+//       // Attach the user ID to the session for frontend access
+//       if (token) {
+//         session.user.id = token.id as string;
+//       }
+//       return session;
+//     },
+//     async redirect({ url, baseUrl }) {
+//       console.log("URL WILL BE: ", url);
+//       // Redirect to /connectaccount after signup
+//       return url === "/signin" ? `${baseUrl}/connectaccount` : url;
+//     },
+//   },
+//   pages: {
+//     signIn: "/signin",
+//     newUser: "/connectaccount",
+//   },
+// };
