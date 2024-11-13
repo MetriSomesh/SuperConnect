@@ -28,32 +28,44 @@ const RecommendationPage = () => {
   const [progress, setProgress] = useState<string>("");
   const router = useRouter();
 
+  // const fetchFollowersForUser = async (accountId: string) => {
+  //   try {
+  //     // const response = await axios.get<{
+  //     //   users: {
+  //     //     id: number;
+  //     //     id_str: string;
+  //     //     description: string;
+  //     //     followers_count: number;
+  //     //     screen_name: string;
+  //     //     name: string;
+  //     //   }[];
+  //     // }>(
+  //     //   `https://api.socialdata.tools/twitter/followers/list?user_id=${accountId}`,
+  //     //   {
+  //     //     headers: {
+  //     //       Authorization:
+  //     //         "816|uDVquPB05o55uj8i7zpDuE1yX5fXyLMDuO6COGN218b55c2f", // Use your actual API key
+  //     //       Accept: "application/json",
+  //     //     },
+  //     //   }
+  //     // );
+  //     // return response.data.users || [];
+  //     const response = await axios.post("/api/fetchConnections", {
+  //       userId: accountId,
+  //     });
+  //     return response;
+  //   } catch (error) {
+  //     console.error(`Error fetching followers for user ${accountId}:`, error);
+  //     return [];
+  //   }
+  // };
   const fetchFollowersForUser = async (accountId: string) => {
     try {
-      // const response = await axios.get<{
-      //   users: {
-      //     id: number;
-      //     id_str: string;
-      //     description: string;
-      //     followers_count: number;
-      //     screen_name: string;
-      //     name: string;
-      //   }[];
-      // }>(
-      //   `https://api.socialdata.tools/twitter/followers/list?user_id=${accountId}`,
-      //   {
-      //     headers: {
-      //       Authorization:
-      //         "816|uDVquPB05o55uj8i7zpDuE1yX5fXyLMDuO6COGN218b55c2f", // Use your actual API key
-      //       Accept: "application/json",
-      //     },
-      //   }
-      // );
-      // return response.data.users || [];
       const response = await axios.post("/api/fetchConnections", {
         userId: accountId,
       });
-      return response;
+      // Assuming response.data contains the user array
+      return response.data || [];
     } catch (error) {
       console.error(`Error fetching followers for user ${accountId}:`, error);
       return [];
