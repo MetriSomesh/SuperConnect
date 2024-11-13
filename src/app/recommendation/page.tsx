@@ -124,12 +124,13 @@ const RecommendationPage = () => {
           allFollowersOfFollowers =
             allFollowersOfFollowers.concat(firstLevelFollowers);
         }
-
+        console.log("ALLFOLLOWERS: ", allFollowersOfFollowers);
         setProgress("Processing recommendations...");
         const filteredFollowers = filterRecommendations(
           allFollowersOfFollowers,
           currentUserId
         );
+        console.log("FILTERED FOLLOWERS", filteredFollowers);
 
         const newRecommendations = filteredFollowers
           .slice(0, 50)
@@ -220,7 +221,7 @@ const RecommendationPage = () => {
                   <HiUserCircle className="w-16 h-16 text-gray-300" />
                 </div>
                 <CardTitle className="text-xl font-bold">
-                  {rec.recommendedUser.name}
+                  {rec.recommendedUser.bio}
                 </CardTitle>
                 <p className="text-gray-400 text-sm">
                   @{rec.recommendedUser.username}
