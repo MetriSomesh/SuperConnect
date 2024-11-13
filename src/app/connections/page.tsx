@@ -50,7 +50,6 @@ const ConnectionPage = () => {
         connectionResponse.data.Connections &&
         connectionResponse.data.Connections.length > 0
       ) {
-        // If connections are found, set them
         setConnections(connectionResponse.data.Connections);
       } else {
         // If no connections, proceed to fetch Twitter ID
@@ -62,16 +61,10 @@ const ConnectionPage = () => {
           const accountId = twitterIdResponse.data.twitter_info.account_id;
           console.log("Account ID:", accountId);
 
-          // Use the account_id to fetch followers from Twitter API
-          const twitterResponse = await axios.get(
-            `https://api.socialdata.tools/twitter/followers/list?user_id=${accountId}`,
-            {
-              headers: {
-                Authorization: `Bearer 816|uDVquPB05o55uj8i7zpDuE1yX5fXyLMDuO6COGN218b55c2f`, // Use your actual API key
-                Accept: "application/json",
-              },
-            }
-          );
+          // Use the new API route instead of calling socialdata.tools directly
+          const twitterResponse = await axios.post("/api/getTwitterFollowers", {
+            accountId: accountId,
+          });
 
           console.log(
             "Twitter Followers Response:",
@@ -101,11 +94,7 @@ const ConnectionPage = () => {
             }));
 
             setConnections(formattedConnections);
-          } else {
-            console.error("Unexpected Twitter API response format");
           }
-        } else {
-          console.error("No account ID found in twitterIdResponse");
         }
       }
     } catch (error) {
