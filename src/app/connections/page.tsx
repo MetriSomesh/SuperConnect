@@ -62,7 +62,7 @@ const ConnectionPage = () => {
           console.log("Account ID:", accountId);
 
           // Use the new API route instead of calling socialdata.tools directly
-          const twitterResponse = await axios.post("/api/getTwitterFollowers", {
+          const twitterResponse = await axios.post("/api/fetchConnections", {
             accountId: accountId,
           });
 
