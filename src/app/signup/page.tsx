@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
+// import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
@@ -32,9 +32,9 @@ export default function SignUp() {
   };
 
   // Handle Google sign-up/sign-in
-  const handleGoogleSignUp = () => {
-    signIn("google", { callbackUrl: "/connectaccount" });
-  };
+  // const handleGoogleSignUp = () => {
+  //   signIn("google", { callbackUrl: "/connectaccount" });
+  // };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#121212] text-gray-100">
