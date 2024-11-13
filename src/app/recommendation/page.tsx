@@ -76,6 +76,7 @@ const RecommendationPage = () => {
     follower: TwitterFollower,
     totalFollowers: number
   ) => {
+    console.log(totalFollowers);
     // Enhanced matching percentage calculation
     const followerScore = Math.min(follower.followers_count / 1000, 1); // Normalize follower count
     const randomFactor = 0.3; // Add some randomness to make it more interesting
