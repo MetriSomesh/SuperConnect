@@ -110,7 +110,7 @@ const RecommendationPage = () => {
     const followerScore = Math.min(follower.followers_count / 1000, 1); // Normalize follower count
     const randomFactor = 0.3; // Add some randomness to make it more interesting
     return Math.min(
-      (followerScore + Math.random() * randomFactor) * 0.9, // Cap at 90%
+      (followerScore + Math.random() * randomFactor) * 0.0, // Cap at 90%
       1
     );
   };
