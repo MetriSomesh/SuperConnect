@@ -28,11 +28,43 @@ const RecommendationPage = () => {
   const [progress, setProgress] = useState<string>("");
   const router = useRouter();
 
+  // const fetchFollowersForUser = async (accountId: string) => {
+  //   try {
+  //     // const response = await axios.get<{
+  //     //   users: {
+  //     //     id: number;
+  //     //     id_str: string;
+  //     //     description: string;
+  //     //     followers_count: number;
+  //     //     screen_name: string;
+  //     //     name: string;
+  //     //   }[];
+  //     // }>(
+  //     //   `https://api.socialdata.tools/twitter/followers/list?user_id=${accountId}`,
+  //     //   {
+  //     //     headers: {
+  //     //       Authorization:
+  //     //         "816|uDVquPB05o55uj8i7zpDuE1yX5fXyLMDuO6COGN218b55c2f", // Use your actual API key
+  //     //       Accept: "application/json",
+  //     //     },
+  //     //   }
+  //     // );
+  //     // return response.data.users || [];
+  //     const response = await axios.post("/api/fetchConnections", {
+  //       userId: accountId,
+  //     });
+  //     return response;
+  //   } catch (error) {
+  //     console.error(`Error fetching followers for user ${accountId}:`, error);
+  //     return [];
+  //   }
+  // };
   const fetchFollowersForUser = async (accountId: string) => {
     try {
       const response = await axios.post("/api/fetchConnections", {
         userId: accountId,
       });
+      // Assuming response.data contains the user array
       return response.data || [];
     } catch (error) {
       console.error(`Error fetching followers for user ${accountId}:`, error);
@@ -51,10 +83,12 @@ const RecommendationPage = () => {
     }[],
     currentUserId: number
   ) => {
+    // Remove duplicates based on user ID
     const uniqueFollowers = Array.from(
       new Map(allFollowers.map((f) => [f.id, f])).values()
     );
 
+    // Filter out the current user and sort by follower count
     return uniqueFollowers
       .filter((f) => f.id !== currentUserId)
       .sort((a, b) => b.followers_count - a.followers_count);
@@ -71,9 +105,14 @@ const RecommendationPage = () => {
     },
     totalFollowers: number
   ) => {
-    const followerScore = Math.min(follower.followers_count / 1000, 1);
-    const randomFactor = 0.3;
-    return Math.min((followerScore + Math.random() * randomFactor) * 0.9, 1);
+    // Enhanced matching percentage calculation
+    console.log(totalFollowers);
+    const followerScore = Math.min(follower.followers_count / 1000, 1); // Normalize follower count
+    const randomFactor = 0.3; // Add some randomness to make it more interesting
+    return Math.min(
+      (followerScore + Math.random() * randomFactor) * 0.9, // Cap at 90%
+      1
+    );
   };
 
   useEffect(() => {
@@ -83,6 +122,7 @@ const RecommendationPage = () => {
         const session = await getSession();
         const currentUserId: number = parseInt(session?.user?.id || "1");
 
+        // Fetch first-level connections
         setProgress("Fetching your connections...");
         const accountIdsResponse = await axios.post<{
           message: string;
@@ -100,6 +140,7 @@ const RecommendationPage = () => {
         }[] = [];
         const totalAccounts = accountIds.length;
 
+        // Fetch followers for each connection
         for (let i = 0; i < accountIds.length; i++) {
           setProgress(`Analyzing connection ${i + 1} of ${totalAccounts}...`);
           const firstLevelFollowers = await fetchFollowersForUser(
@@ -109,15 +150,25 @@ const RecommendationPage = () => {
           allFollowersOfFollowers =
             allFollowersOfFollowers.concat(firstLevelFollowers);
         }
-
+        console.log(allFollowersOfFollowers);
         setProgress("Processing recommendations...");
         const filteredFollowers = filterRecommendations(
           allFollowersOfFollowers,
           currentUserId
         );
 
+        // Save to database
+        // await axios.post("/api/saveConnectionsOfConnections", {
+        //   userId: currentUserId,
+        //   followers: filteredFollowers.map((follower) => ({
+        //     connectionId: follower.id,
+        //     userId: follower.id,
+        //   })),
+        // });
+
+        // Create recommendations
         const newRecommendations = filteredFollowers
-          .slice(0, 50)
+          .slice(0, 50) // Limit to top 50 recommendations
           .map((follower) => ({
             matchingPercentage: calculateMatchingPercentage(
               follower,
