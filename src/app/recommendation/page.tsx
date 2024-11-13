@@ -130,7 +130,7 @@ const RecommendationPage = () => {
           allFollowersOfFollowers,
           currentUserId
         );
-        console.log("FILTERED FOLLOWERS", filteredFollowers);
+        console.log("FILTERED FOLLOWERS", filteredFollowers[0]);
 
         const newRecommendations = filteredFollowers
           .slice(0, 50)
