@@ -35,26 +35,30 @@ export async function GET() {
     },
   });
 
-  const request_data = {
-    url: url,
-    method: "POST",
-    data: {
-      oauth_callback: oauth_callback,
-    },
-  };
-
   try {
-    // Get OAuth authorization header
+    // Generate a unique nonce for each request
+    const oauth_nonce = crypto.randomBytes(16).toString("hex");
+    const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
+
+    const request_data = {
+      url: url,
+      method: "POST",
+      data: {
+        oauth_callback: oauth_callback,
+      },
+    };
+
+    // Get OAuth authorization header with unique nonce and timestamp
     const authHeader = oauth.toHeader(
-      oauth.authorize(request_data, undefined) // Use undefined instead of empty token object
+      oauth.authorize(request_data, { key: "", secret: "" }) // Empty token since no access token yet
     );
-    console.log("OAuth Header:", authHeader);
+
+    authHeader.Authorization += `, oauth_nonce="${oauth_nonce}", oauth_timestamp="${oauth_timestamp}"`;
 
     const response = await axios.post(url, null, {
       headers: {
         Authorization: authHeader.Authorization,
         "Content-Type": "application/x-www-form-urlencoded",
-        "Cache-Control": "no-cache", // Prevent caching
       },
     });
 
