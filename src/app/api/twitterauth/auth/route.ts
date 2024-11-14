@@ -53,7 +53,7 @@ export async function GET() {
 
     // Get OAuth authorization header
     const authHeader = oauth.toHeader(
-      oauth.authorize(request_data, { key: "", secret: "" }) // Empty token since no access token yet
+      oauth.authorize(request_data, undefined) // Empty token since no access token yet
     );
 
     const response = await axios.post(url, null, {
