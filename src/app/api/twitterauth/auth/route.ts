@@ -36,7 +36,7 @@ export async function GET() {
   });
 
   try {
-    // Generate a unique nonce for each request
+    // Generate a unique nonce and timestamp for each request
     const oauth_nonce = crypto.randomBytes(16).toString("hex");
     const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
 
@@ -45,15 +45,15 @@ export async function GET() {
       method: "POST",
       data: {
         oauth_callback: oauth_callback,
+        oauth_nonce: oauth_nonce,
+        oauth_timestamp: oauth_timestamp,
       },
     };
 
-    // Get OAuth authorization header with unique nonce and timestamp
+    // Get OAuth authorization header
     const authHeader = oauth.toHeader(
       oauth.authorize(request_data, { key: "", secret: "" }) // Empty token since no access token yet
     );
-
-    authHeader.Authorization += `, oauth_nonce="${oauth_nonce}", oauth_timestamp="${oauth_timestamp}"`;
 
     const response = await axios.post(url, null, {
       headers: {
