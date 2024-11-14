@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
+  const oauth_consumer_key = process.env.TWITTERAPIKEY!;
   const oauth_consumer_secret =
     "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
   const oauth_nonce = crypto.randomBytes(32).toString("hex");
