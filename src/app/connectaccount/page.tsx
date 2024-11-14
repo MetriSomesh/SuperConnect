@@ -60,8 +60,6 @@ export default function ConnectAccount() {
     }
   };
   const handlePostAndNavigate = async (url: string) => {
-    const router = useRouter();
-
     // Make the POST request
     const response = await fetch(url, {
       method: "POST",
