@@ -54,6 +54,7 @@ export async function GET() {
       headers: {
         Authorization: authHeader.Authorization,
         "Content-Type": "application/x-www-form-urlencoded",
+        "Cache-Control": "no-cache", // Prevent caching
       },
     });
 
