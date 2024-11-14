@@ -6,8 +6,9 @@ import crypto from "crypto";
 
 export async function GET() {
   // Move sensitive credentials to environment variables
-  const oauth_consumer_key = process.env.TWITTERAPIKEY;
-  const oauth_consumer_secret = process.env.TWITTERAPIKEYSECRET;
+  const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
+  const oauth_consumer_secret =
+    "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
   const oauth_callback =
     "https://super-connect-iota.vercel.app/api/twitterauth/callback";
 
