@@ -41,14 +41,22 @@ export async function GET() {
   // Add the oauth_signature to the parameters
   params.oauth_signature = oauth_signature;
 
+  // Format the Authorization header correctly
+  const authorizationHeader = `OAuth ${Object.entries(params)
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}="${encodeURIComponent(value)}"`
+    )
+    .join(", ")}`;
+
   try {
     // Make the POST request to get the request token
     const response = await axios.post(
       "https://api.twitter.com/oauth/request_token",
-      qs.stringify(params),
+      null,
       {
         headers: {
-          Authorization: `OAuth ${qs.stringify(params)}`,
+          Authorization: authorizationHeader,
         },
       }
     );
