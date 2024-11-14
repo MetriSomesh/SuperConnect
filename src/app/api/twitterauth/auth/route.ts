@@ -62,7 +62,7 @@ export async function GET() {
 
     // Step 2: Redirect the user to Twitter's authorization URL
     // const redirectUrl = `https://api.twitter.com/oauth/authorize?oauth_token=${tmpOauthToken}`;
-    // return NextResponse.redirect(redirectUrl);
+    return NextResponse.json(tmpOauthToken);
   } catch (error) {
     console.error("Error during OAuth request token:", error);
     return new NextResponse("Failed to obtain request token", { status: 500 });
