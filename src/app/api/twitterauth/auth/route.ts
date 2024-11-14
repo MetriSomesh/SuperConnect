@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
+import OAuth from "oauth-1.0a";
 import queryString from "query-string";
 
 export async function GET() {
@@ -11,13 +12,40 @@ export async function GET() {
 
   const url = "https://api.twitter.com/oauth/request_token";
 
-  // Twitter OAuth headers
-  const authHeader = {
-    Authorization: `OAuth oauth_consumer_key="${oauth_consumer_key}", oauth_consumer_secret="${oauth_consumer_secret}", oauth_callback="${oauth_callback}"`,
+  // Set up OAuth
+  const oauth = new OAuth({
+    consumer: {
+      key: oauth_consumer_key,
+      secret: oauth_consumer_secret,
+    },
+    signature_method: "HMAC-SHA1",
+    hash_function(base_string, key) {
+      return require("crypto")
+        .createHmac("sha1", key)
+        .update(base_string)
+        .digest("base64");
+    },
+  });
+
+  const request_data = {
+    url: url,
+    method: "POST",
+    data: {
+      oauth_callback: oauth_callback,
+    },
   };
 
+  // Generate the OAuth header
+  const authHeader = oauth.toHeader(oauth.authorize(request_data));
+
   try {
-    const response = await axios.post(url, null, { headers: authHeader });
+    // Make the POST request with axios
+    const response = await axios.post(url, null, {
+      headers: {
+        ...authHeader,
+        "Content-Type": "application/x-www-form-urlencoded", // required for OAuth 1.0a
+      },
+    });
 
     // Parse the response to extract oauth_token and oauth_token_secret
     const responseData = queryString.parse(response.data);
@@ -25,9 +53,9 @@ export async function GET() {
     const tmpOauthToken = responseData.oauth_token;
     const tmpOauthTokenSecret = responseData.oauth_token_secret;
 
-    // Store tmpOauthToken and tmpOauthTokenSecret in your database
-    console.log("TWITTER OAUTH TOKEN SECRETE: ", tmpOauthTokenSecret);
-    console.log(tmpOauthToken);
+    console.log("TWITTER OAUTH TOKEN SECRET: ", tmpOauthTokenSecret);
+    console.log("oauth_token: ", tmpOauthToken);
+
     // Step 2: Redirect the user to Twitter's authorization URL
     // const redirectUrl = `https://api.twitter.com/oauth/authorize?oauth_token=${tmpOauthToken}`;
     // return NextResponse.redirect(redirectUrl);
