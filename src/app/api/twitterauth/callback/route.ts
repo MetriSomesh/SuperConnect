@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import axios from "axios";
+import qs from "querystring";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NEXT_AUTH } from "@/app/lib/auth";
-import crypto from "crypto";
-import qs from "querystring";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +13,7 @@ async function generateOAuthSignature(
   url: string,
   params: Record<string, string>
 ) {
-  const consumerSecret = "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
+  const consumerSecret = process.env.TWITTER_API_SECRET!;
   const tokenSecret = params.oauth_token_secret || "";
 
   const baseString = [
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     const oauth_version = "1.0";
 
     const tokenExchangeParams = {
-      oauth_consumer_key: "6GUF62tntsp3C3hac2wzL9v94",
+      oauth_consumer_key: process.env.TWITTER_API_KEY!,
       oauth_token: oauth_token, // Now guaranteed to be a string
       oauth_nonce,
       oauth_timestamp,
@@ -93,16 +93,14 @@ export async function GET(request: NextRequest) {
     const {
       oauth_token: access_token,
       oauth_token_secret,
+      //   user_id,
       //   screen_name,
     } = qs.parse(response.data);
-
-    // const user_id = response.data.user_id.toString();
 
     // Store tokens in the database for later use
     if (
       typeof access_token !== "string" ||
       typeof oauth_token_secret !== "string"
-      //   typeof screen_name !== "string"
     ) {
       return NextResponse.json(
         { error: "Invalid access_token" },
@@ -110,9 +108,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // if (typeof user_id !== "string") {
-    //   user_id?.toString();
-    // }
     if (session?.user?.email) {
       await prisma.$connect();
 
