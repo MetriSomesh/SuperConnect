@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 import OAuth from "oauth-1.0a";
 import queryString from "query-string";
-
-// Import Node's crypto module
 import crypto from "crypto";
 
 export async function GET() {
@@ -12,17 +10,12 @@ export async function GET() {
     "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
   const oauth_callback =
     "https://super-connect-iota.vercel.app/api/twitterauth/callback";
-
   const url = "https://api.twitter.com/oauth/request_token";
 
-  // Set up OAuth
+  // Set up OAuth with nonce and timestamp generation
   const oauth = new OAuth({
-    consumer: {
-      key: oauth_consumer_key,
-      secret: oauth_consumer_secret,
-    },
+    consumer: { key: oauth_consumer_key, secret: oauth_consumer_secret },
     signature_method: "HMAC-SHA1",
-    // Use crypto's createHmac function to generate the OAuth signature
     hash_function(base_string, key) {
       return crypto
         .createHmac("sha1", key)
@@ -30,6 +23,9 @@ export async function GET() {
         .digest("base64");
     },
   });
+
+  const oauth_nonce = crypto.randomBytes(16).toString("hex");
+  const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
 
   const request_data = {
     url: url,
@@ -39,32 +35,31 @@ export async function GET() {
     },
   };
 
-  // Generate the OAuth header
-  const authHeader = oauth.toHeader(oauth.authorize(request_data));
+  // Manually set the nonce and timestamp in the header
+  const authHeader = oauth.toHeader(
+    oauth.authorize(request_data, { key: "", secret: "" }) // Empty token since no access token yet
+  );
+
+  authHeader.Authorization += `, oauth_nonce="${oauth_nonce}", oauth_timestamp="${oauth_timestamp}"`;
 
   try {
-    // Make the POST request with axios
     const response = await axios.post(url, null, {
       headers: {
         ...authHeader,
-        "Content-Type": "application/x-www-form-urlencoded", // required for OAuth 1.0a
+        "Content-Type": "application/x-www-form-urlencoded",
       },
     });
 
-    // Parse the response to extract oauth_token and oauth_token_secret
     const responseData = queryString.parse(response.data);
-
     const tmpOauthToken = responseData.oauth_token;
     const tmpOauthTokenSecret = responseData.oauth_token_secret;
 
-    console.log("TWITTER OAUTH TOKEN SECRET: ", tmpOauthTokenSecret);
-    console.log("oauth_token: ", tmpOauthToken);
+    console.log("TWITTER OAUTH TOKEN SECRET:", tmpOauthTokenSecret);
+    console.log("oauth_token:", tmpOauthToken);
 
-    // Step 2: Redirect the user to Twitter's authorization URL
     const redirectUrl = `https://api.twitter.com/oauth/authorize?oauth_token=${tmpOauthToken}`;
 
-    const responseURL = NextResponse.json(redirectUrl);
-    return responseURL;
+    return NextResponse.json({ url: redirectUrl });
   } catch (error) {
     console.error("Error during OAuth request token:", error);
     return new NextResponse("Failed to obtain request token", { status: 500 });
