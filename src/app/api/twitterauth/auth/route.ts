@@ -38,6 +38,7 @@ export async function GET() {
   try {
     // Generate a unique nonce and timestamp for each request
     const oauth_nonce = crypto.randomBytes(16).toString("hex");
+
     const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
 
     const request_data = {
@@ -77,6 +78,8 @@ export async function GET() {
     return NextResponse.json({
       url: redirectUrl,
       success: true,
+      oauth: oauth_nonce,
+      oauthtime: oauth_timestamp,
     });
   } catch (error) {
     console.error("Error during OAuth request token:", error);
