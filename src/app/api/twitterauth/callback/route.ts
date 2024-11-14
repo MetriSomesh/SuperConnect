@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
   const oauth_signature_method = "HMAC-SHA1";
   const oauth_version = "1.0";
 
-  const res = await axios.post("/api/generateOAuthCreds");
+  const res = await axios.post(
+    "https://super-connect-iota.vercel.app/api/generateOAuthCreds"
+  );
 
   const oauth_nonce = res.data.oauth_nonce;
   const oauth_timestamp = res.data.oauth_timestamp;
@@ -100,9 +102,6 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error("Error during OAuth access token exchange:", error);
-    return NextResponse.json(
-      { error: "Failed to get access token" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
