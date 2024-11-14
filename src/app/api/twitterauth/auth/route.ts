@@ -3,6 +3,9 @@ import axios from "axios";
 import OAuth from "oauth-1.0a";
 import queryString from "query-string";
 
+// Import Node's crypto module
+import crypto from "crypto";
+
 export async function GET() {
   const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
   const oauth_consumer_secret =
@@ -19,8 +22,9 @@ export async function GET() {
       secret: oauth_consumer_secret,
     },
     signature_method: "HMAC-SHA1",
+    // Use crypto's createHmac function to generate the OAuth signature
     hash_function(base_string, key) {
-      return require("crypto")
+      return crypto
         .createHmac("sha1", key)
         .update(base_string)
         .digest("base64");
