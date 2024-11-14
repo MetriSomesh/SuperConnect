@@ -4,18 +4,6 @@ import axios from "axios";
 import qs from "querystring";
 
 export async function GET(request: NextRequest) {
-  // Retrieve the oauth_verifier and oauth_token from the query parameters
-  const oauth_verifier = request.nextUrl.searchParams.get("oauth_verifier");
-  const oauth_token = request.nextUrl.searchParams.get("oauth_token");
-
-  // Ensure oauth_verifier and oauth_token are present
-  if (!oauth_verifier || !oauth_token) {
-    return NextResponse.json(
-      { error: "Invalid OAuth token or verifier" },
-      { status: 400 }
-    );
-  }
-
   const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
   const oauth_consumer_secret =
     "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
@@ -23,27 +11,28 @@ export async function GET(request: NextRequest) {
   const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
   const oauth_signature_method = "HMAC-SHA1";
   const oauth_version = "1.0";
+  const oauth_callback =
+    "https://super-connect-iota.vercel.app/api/twitterauth/callback"; // The URL Twitter will redirect back to after user authorization
 
-  // Prepare parameters for the OAuth signature for the access token exchange
+  // Prepare parameters for the OAuth signature
   const params: Record<string, string> = {
     oauth_consumer_key,
-    oauth_token,
-    oauth_verifier,
     oauth_nonce,
     oauth_timestamp,
     oauth_signature_method,
     oauth_version,
+    oauth_callback,
   };
 
-  // Generate the signature base string for the access token request
+  // Generate the signature base string for the request token request
   const baseString = [
-    "POST", // HTTP method (POST for access token)
-    encodeURIComponent("https://api.twitter.com/oauth/access_token"), // The URL
+    "POST", // HTTP method (POST for request token)
+    encodeURIComponent("https://api.twitter.com/oauth/request_token"), // The URL
     encodeURIComponent(qs.stringify(params)), // URL parameters
   ].join("&");
 
   // Generate the OAuth signature
-  const signingKey = `${encodeURIComponent(oauth_consumer_secret)}&`; // Token secret will be added here
+  const signingKey = `${encodeURIComponent(oauth_consumer_secret)}&`; // Empty token secret for now
   const oauth_signature = crypto
     .createHmac("sha1", signingKey)
     .update(baseString)
@@ -52,10 +41,10 @@ export async function GET(request: NextRequest) {
   // Add the oauth_signature to the parameters
   params.oauth_signature = oauth_signature;
 
-  // Make the POST request to obtain the access token
   try {
+    // Make the POST request to get the request token
     const response = await axios.post(
-      "https://api.twitter.com/oauth/access_token",
+      "https://api.twitter.com/oauth/request_token",
       qs.stringify(params),
       {
         headers: {
@@ -64,25 +53,18 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    // Parse the response data
+    // Parse the response data to extract oauth_token
     const parsedResponse = qs.parse(response.data);
-    const access_token = parsedResponse.oauth_token;
-    const access_token_secret = parsedResponse.oauth_token_secret;
-    const user_id = parsedResponse.user_id;
-    const screen_name = parsedResponse.screen_name;
+    const oauth_token = parsedResponse.oauth_token;
 
-    // Here, you can store the access token and secret in your database for later use
+    // Redirect the user to Twitter's authorization page
+    const authorizationUrl = `https://api.twitter.com/oauth/authorize?oauth_token=${oauth_token}`;
 
-    return NextResponse.json({
-      access_token,
-      access_token_secret,
-      user_id,
-      screen_name,
-    });
+    return NextResponse.redirect(authorizationUrl); // Redirect to Twitter's authorization page
   } catch (error) {
-    console.error("Error during OAuth access token exchange:", error);
+    console.error("Error during OAuth request token:", error);
     return NextResponse.json(
-      { error: "Failed to get access token" },
+      { error: "Failed to obtain request token" },
       { status: 500 }
     );
   }

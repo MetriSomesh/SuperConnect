@@ -2,122 +2,88 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import axios from "axios";
 import qs from "querystring";
-import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
+import { PrismaClient } from "@prisma/client";
 import { NEXT_AUTH } from "@/app/lib/auth";
-
 const prisma = new PrismaClient();
 
-async function generateOAuthSignature(
-  method: string,
-  url: string,
-  params: Record<string, string>
-) {
-  const consumerSecret = process.env.TWITTER_API_SECRET!;
-  const tokenSecret = params.oauth_token_secret || "";
+export async function GET(request: NextRequest) {
+  // Retrieve the oauth_verifier and oauth_token from the query parameters
+  const oauth_verifier = request.nextUrl.searchParams.get("oauth_verifier");
+  const oauth_token = request.nextUrl.searchParams.get("oauth_token");
+  const session = await getServerSession(NEXT_AUTH);
 
+  // Ensure oauth_verifier and oauth_token are present
+  if (!oauth_verifier || !oauth_token) {
+    return NextResponse.json(
+      { error: "Invalid OAuth token or verifier" },
+      { status: 400 }
+    );
+  }
+
+  const oauth_consumer_key = "YOUR_CONSUMER_KEY";
+  const oauth_consumer_secret = "YOUR_CONSUMER_SECRET";
+  const oauth_nonce = crypto.randomBytes(32).toString("hex");
+  const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
+  const oauth_signature_method = "HMAC-SHA1";
+  const oauth_version = "1.0";
+
+  // Prepare parameters for the OAuth signature for the access token exchange
+  const params: Record<string, string> = {
+    oauth_consumer_key,
+    oauth_token,
+    oauth_verifier,
+    oauth_nonce,
+    oauth_timestamp,
+    oauth_signature_method,
+    oauth_version,
+  };
+
+  // Generate the signature base string for the access token request
   const baseString = [
-    method,
-    encodeURIComponent(url),
-    encodeURIComponent(
-      qs.stringify({ ...params }).replace(/%20/g, "+") // format URL parameters
-    ),
+    "POST", // HTTP method (POST for access token)
+    encodeURIComponent("https://api.twitter.com/oauth/access_token"), // The URL
+    encodeURIComponent(qs.stringify(params)), // URL parameters
   ].join("&");
 
-  const signingKey = `${encodeURIComponent(
-    consumerSecret
-  )}&${encodeURIComponent(tokenSecret)}`;
-
-  const signature = crypto
+  // Generate the OAuth signature
+  const signingKey = `${encodeURIComponent(oauth_consumer_secret)}&`; // Token secret will be added here
+  const oauth_signature = crypto
     .createHmac("sha1", signingKey)
     .update(baseString)
     .digest("base64");
 
-  return signature;
-}
-
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const oauth_verifier = searchParams.get("oauth_verifier");
-  const oauth_token = searchParams.get("oauth_token");
-
-  // Ensure oauth_token is a string before proceeding
-  if (typeof oauth_token !== "string") {
-    return NextResponse.json({ error: "Invalid oauth_token" }, { status: 400 });
-  }
-
-  const session = await getServerSession(NEXT_AUTH);
-
-  if (!oauth_verifier || !oauth_token) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+  // Add the oauth_signature to the parameters
+  params.oauth_signature = oauth_signature;
 
   try {
-    // Prepare parameters for token exchange (OAuth 1.0a)
-    const oauth_nonce = crypto.randomBytes(32).toString("hex");
-    const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
-    const oauth_signature_method = "HMAC-SHA1";
-    const oauth_version = "1.0";
-
-    const tokenExchangeParams = {
-      oauth_consumer_key: process.env.TWITTER_API_KEY!,
-      oauth_token: oauth_token, // Now guaranteed to be a string
-      oauth_nonce,
-      oauth_timestamp,
-      oauth_signature_method,
-      oauth_version,
-      oauth_verifier,
-    };
-
-    // Generate OAuth signature
-    const signature = await generateOAuthSignature(
-      "POST",
-      "https://api.twitter.com/oauth/access_token",
-      tokenExchangeParams
-    );
-
-    // Send request to Twitter API to exchange the request token for an access token
+    // Make the POST request to obtain the access token
     const response = await axios.post(
       "https://api.twitter.com/oauth/access_token",
-      qs.stringify({ ...tokenExchangeParams, oauth_signature: signature }),
+      qs.stringify(params),
       {
         headers: {
-          Authorization: `OAuth ${qs.stringify({
-            ...tokenExchangeParams,
-            oauth_signature: signature,
-          })}`,
+          Authorization: `OAuth ${qs.stringify(params)}`,
         },
       }
     );
 
-    const {
-      oauth_token: access_token,
-      oauth_token_secret,
-      //   user_id,
-      //   screen_name,
-    } = qs.parse(response.data);
+    // Parse the response data
+    const parsedResponse = qs.parse(response.data);
+    const access_token = parsedResponse.oauth_token?.toString();
+    const access_token_secret = parsedResponse.oauth_token_secret?.toString();
+    // const user_id = parsedResponse.user_id;
+    // const screen_name = parsedResponse.screen_name;
 
-    // Store tokens in the database for later use
-    if (
-      typeof access_token !== "string" ||
-      typeof oauth_token_secret !== "string"
-    ) {
-      return NextResponse.json(
-        { error: "Invalid access_token" },
-        { status: 400 }
-      );
-    }
-
+    // Store access token and secret in the database, or return it to the frontend
     if (session?.user?.email) {
       await prisma.$connect();
 
       const updateUser = await prisma.user.update({
         where: { email: session.user.email },
         data: {
-          accessToken: access_token.toString(),
-          refreshToken: oauth_token_secret.toString(),
-          //   twitterUserId: user_id.toString(),
-          //   twitterScreenName: screen_name.toString(),
+          accessToken: access_token,
+          refreshToken: access_token_secret,
         },
       });
 
@@ -125,7 +91,7 @@ export async function GET(request: NextRequest) {
 
       if (!updateUser) {
         return NextResponse.redirect(
-          "https://super-connect-iota.vercel.app/unsuccessful"
+          "https://super-connect-iota.vercel.app/unsucessful"
         );
       }
 
@@ -134,13 +100,13 @@ export async function GET(request: NextRequest) {
       );
     } else {
       return NextResponse.redirect(
-        "https://super-connect-iota.vercel.app/unsuccessful"
+        "https://super-connect-iota.vercel.app/unsucessful"
       );
     }
   } catch (error) {
-    console.error("Error during OAuth 1.0a callback:", error);
+    console.error("Error during OAuth access token exchange:", error);
     return NextResponse.json(
-      { error: "Failed to authenticate with Twitter" },
+      { error: "Failed to get access token" },
       { status: 500 }
     );
   }
