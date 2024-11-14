@@ -8,9 +8,8 @@ import { NEXT_AUTH } from "@/app/lib/auth";
 
 const prisma = new PrismaClient();
 
-export async function GET(request: NextRequest) {
-  const oauth_verifier = request.nextUrl.searchParams.get("oauth_verifier");
-  const oauth_token = request.nextUrl.searchParams.get("oauth_token");
+export async function POST(request: NextRequest) {
+  const { oauth_verifier, oauth_token } = await request.json();
   const session = await getServerSession(NEXT_AUTH);
 
   if (!oauth_verifier || !oauth_token) {
@@ -20,7 +19,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const oauth_consumer_key = process.env.TWITTERAPIKEY!;
+  const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
   const oauth_consumer_secret =
     "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
   const oauth_nonce = crypto.randomBytes(32).toString("hex");
