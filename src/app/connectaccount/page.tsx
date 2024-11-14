@@ -62,7 +62,7 @@ export default function ConnectAccount() {
 
   const handleConnectTwitter = async () => {
     const res = await axios.post("/api/twitterauth/auth");
-    const url = res.data;
+    const url = res.data.url;
 
     if (url) {
       router.push(url);

@@ -69,8 +69,6 @@ export async function POST() {
       {
         url: redirectUrl,
         success: true,
-        oauth: oauth_nonce,
-        oauthtime: oauth_timestamp,
       },
       {
         headers: {
