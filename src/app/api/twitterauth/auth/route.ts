@@ -3,7 +3,7 @@ import crypto from "crypto";
 import axios from "axios";
 import qs from "querystring";
 
-export async function GET_CALLBACK(request: NextRequest) {
+export async function GET(request: NextRequest) {
   // Retrieve the oauth_verifier and oauth_token from the query parameters
   const oauth_verifier = request.nextUrl.searchParams.get("oauth_verifier");
   const oauth_token = request.nextUrl.searchParams.get("oauth_token");
