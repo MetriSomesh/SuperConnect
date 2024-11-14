@@ -8,9 +8,10 @@ import { NEXT_AUTH } from "@/app/lib/auth";
 
 const prisma = new PrismaClient();
 
-export async function GET(request: NextRequest) {
-  const oauth_verifier = request.nextUrl.searchParams.get("oauth_verifier");
-  const oauth_token = request.nextUrl.searchParams.get("oauth_token");
+export async function POST(request: NextRequest) {
+  const body = await request.json(); // Parse the JSON body of the POST request
+  const oauth_verifier = body.oauth_verifier;
+  const oauth_token = body.oauth_token;
   const session = await getServerSession(NEXT_AUTH);
 
   if (!oauth_verifier || !oauth_token) {
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const oauth_consumer_key = process.env.TWITTERAPIKEY!;
+  const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
   const oauth_consumer_secret =
     "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
   const oauth_nonce = crypto.randomBytes(32).toString("hex");
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
       qs.stringify({ oauth_verifier }),
       {
         headers: {
-          Authorization: `OAuth oauth_consumer_key="${oauth_consumer_key}", oauth_token="${oauth_token}", oauth_signature="${oauth_signature}", oauth_nonce="${oauth_nonce}", oauth_signature_method="${oauth_signature_method}", oauth_timestamp="${oauth_timestamp}", oauth_version="${oauth_version}"`,
+          Authorization: `OAuth oauth_consumer_key="${oauth_consumer_key}", oauth_token="${oauth_token}", oauth_signature="${params.oauth_signature}", oauth_nonce="${oauth_nonce}", oauth_signature_method="${oauth_signature_method}", oauth_timestamp="${oauth_timestamp}", oauth_version="${oauth_version}"`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
       }

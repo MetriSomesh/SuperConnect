@@ -67,7 +67,7 @@ export async function POST() {
 
     return NextResponse.json(
       {
-        url: redirectUrl,
+        uss: redirectUrl,
         success: true,
       },
       {
