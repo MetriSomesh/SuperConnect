@@ -5,27 +5,33 @@ import queryString from "query-string";
 import crypto from "crypto";
 
 export async function GET() {
-  const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
-  const oauth_consumer_secret =
-    "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
-  const oauth_callback =
-    "https://super-connect-iota.vercel.app/api/twitterauth/callback";
+  // Move sensitive credentials to environment variables
+  const oauth_consumer_key = process.env.TWITTER_CONSUMER_KEY;
+  const oauth_consumer_secret = process.env.TWITTER_CONSUMER_SECRET;
+  const oauth_callback = process.env.TWITTER_CALLBACK_URL;
+
+  if (!oauth_consumer_key || !oauth_consumer_secret || !oauth_callback) {
+    return new NextResponse("Missing required environment variables", {
+      status: 500,
+    });
+  }
+
   const url = "https://api.twitter.com/oauth/request_token";
 
-  // Set up OAuth with nonce and timestamp generation
+  // Initialize OAuth
   const oauth = new OAuth({
-    consumer: { key: oauth_consumer_key, secret: oauth_consumer_secret },
+    consumer: {
+      key: oauth_consumer_key,
+      secret: oauth_consumer_secret,
+    },
     signature_method: "HMAC-SHA1",
-    hash_function(base_string, key) {
+    hash_function: (base_string, key) => {
       return crypto
         .createHmac("sha1", key)
         .update(base_string)
         .digest("base64");
     },
   });
-
-  const oauth_nonce = crypto.randomBytes(16).toString("hex");
-  const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
 
   const request_data = {
     url: url,
@@ -35,33 +41,47 @@ export async function GET() {
     },
   };
 
-  // Manually set the nonce and timestamp in the header
-  const authHeader = oauth.toHeader(
-    oauth.authorize(request_data, { key: "", secret: "" }) // Empty token since no access token yet
-  );
-
-  authHeader.Authorization += `, oauth_nonce="${oauth_nonce}", oauth_timestamp="${oauth_timestamp}"`;
-
   try {
+    // Get OAuth authorization header
+    const authHeader = oauth.toHeader(
+      oauth.authorize(request_data, undefined) // Use undefined instead of empty token object
+    );
+
     const response = await axios.post(url, null, {
       headers: {
-        ...authHeader,
+        Authorization: authHeader.Authorization,
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
 
+    // Parse response data
     const responseData = queryString.parse(response.data);
-    const tmpOauthToken = responseData.oauth_token;
-    const tmpOauthTokenSecret = responseData.oauth_token_secret;
 
-    console.log("TWITTER OAUTH TOKEN SECRET:", tmpOauthTokenSecret);
-    console.log("oauth_token:", tmpOauthToken);
+    if (!responseData.oauth_token || !responseData.oauth_token_secret) {
+      throw new Error("Missing OAuth tokens in response");
+    }
 
-    const redirectUrl = `https://api.twitter.com/oauth/authorize?oauth_token=${tmpOauthToken}`;
+    // Store oauth_token_secret in session or secure storage for later use
+    // Note: You'll need this for the callback endpoint
 
-    return NextResponse.json({ url: redirectUrl });
+    const redirectUrl = `https://api.twitter.com/oauth/authorize?oauth_token=${responseData.oauth_token}`;
+
+    return NextResponse.json({
+      url: redirectUrl,
+      success: true,
+    });
   } catch (error) {
     console.error("Error during OAuth request token:", error);
-    return new NextResponse("Failed to obtain request token", { status: 500 });
+
+    return NextResponse.json(
+      {
+        error: "Failed to obtain request token",
+        details: error,
+        success: false,
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }
