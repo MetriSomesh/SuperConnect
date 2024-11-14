@@ -12,6 +12,7 @@ export async function GET() {
     "https://super-connect-iota.vercel.app/api/twitterauth/callback";
 
   if (!oauth_consumer_key || !oauth_consumer_secret || !oauth_callback) {
+    console.log("heeloo");
     return new NextResponse("Missing required environment variables", {
       status: 500,
     });
