@@ -13,7 +13,7 @@ async function generateOAuthSignature(
   url: string,
   params: Record<string, string>
 ) {
-  const consumerSecret = process.env.TWITTER_API_SECRET!;
+  const consumerSecret = "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
   const tokenSecret = params.oauth_token_secret || "";
 
   const baseString = [
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     const oauth_version = "1.0";
 
     const tokenExchangeParams = {
-      oauth_consumer_key: process.env.TWITTER_API_KEY!,
+      oauth_consumer_key: "6GUF62tntsp3C3hac2wzL9v94",
       oauth_token: oauth_token, // Now guaranteed to be a string
       oauth_nonce,
       oauth_timestamp,

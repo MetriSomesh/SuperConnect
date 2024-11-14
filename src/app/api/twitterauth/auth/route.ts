@@ -14,7 +14,7 @@ export async function GET() {
 
   authUrl.searchParams.append(
     "oauth_consumer_key",
-    process.env.TWITTER_API_KEY!
+    "6GUF62tntsp3C3hac2wzL9v94"
   );
   authUrl.searchParams.append("oauth_nonce", oauth_nonce);
   authUrl.searchParams.append("oauth_signature_method", oauth_signature_method);
