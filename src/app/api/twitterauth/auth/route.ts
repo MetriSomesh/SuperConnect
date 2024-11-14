@@ -4,8 +4,8 @@ import OAuth from "oauth-1.0a";
 import queryString from "query-string";
 import crypto from "crypto";
 
-export async function GET() {
-  // Move sensitive credentials to environment variables
+export async function POST() {
+  // Use POST instead of GET
   const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
   const oauth_consumer_secret =
     "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
@@ -20,25 +20,18 @@ export async function GET() {
 
   const url = "https://api.twitter.com/oauth/request_token";
 
-  // Initialize OAuth
   const oauth = new OAuth({
     consumer: {
       key: oauth_consumer_key,
       secret: oauth_consumer_secret,
     },
     signature_method: "HMAC-SHA1",
-    hash_function: (base_string, key) => {
-      return crypto
-        .createHmac("sha1", key)
-        .update(base_string)
-        .digest("base64");
-    },
+    hash_function: (base_string, key) =>
+      crypto.createHmac("sha1", key).update(base_string).digest("base64"),
   });
 
   try {
-    // Generate a unique nonce and timestamp for each request
     const oauth_nonce = crypto.randomBytes(16).toString("hex");
-
     const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
 
     const request_data = {
@@ -51,36 +44,43 @@ export async function GET() {
       },
     };
 
-    // Get OAuth authorization header
-    const authHeader = oauth.toHeader(
-      oauth.authorize(request_data, undefined) // Empty token since no access token yet
-    );
+    const authHeader = oauth.toHeader(oauth.authorize(request_data));
 
     const response = await axios.post(url, null, {
       headers: {
         Authorization: authHeader.Authorization,
         "Content-Type": "application/x-www-form-urlencoded",
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
       },
     });
 
-    // Parse response data
     const responseData = queryString.parse(response.data);
 
     if (!responseData.oauth_token || !responseData.oauth_token_secret) {
       throw new Error("Missing OAuth tokens in response");
     }
 
-    // Store oauth_token_secret in session or secure storage for later use
-    // Note: You'll need this for the callback endpoint
-
     const redirectUrl = `https://api.twitter.com/oauth/authorize?oauth_token=${responseData.oauth_token}`;
 
-    return NextResponse.json({
-      url: redirectUrl,
-      success: true,
-      oauth: oauth_nonce,
-      oauthtime: oauth_timestamp,
-    });
+    return NextResponse.json(
+      {
+        url: redirectUrl,
+        success: true,
+        oauth: oauth_nonce,
+        oauthtime: oauth_timestamp,
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error during OAuth request token:", error);
 
@@ -90,9 +90,7 @@ export async function GET() {
         details: error,
         success: false,
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
