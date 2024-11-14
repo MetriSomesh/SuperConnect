@@ -6,9 +6,10 @@ import crypto from "crypto";
 
 export async function GET() {
   // Move sensitive credentials to environment variables
-  const oauth_consumer_key = process.env.TWITTER_CONSUMER_KEY;
+  const oauth_consumer_key = process.env.TWITTERAPIKEY;
   const oauth_consumer_secret = process.env.TWITTER_CONSUMER_SECRET;
-  const oauth_callback = process.env.TWITTER_CALLBACK_URL;
+  const oauth_callback =
+    "https://super-connect-iota.vercel.app/api/twitterauth/callback";
 
   if (!oauth_consumer_key || !oauth_consumer_secret || !oauth_callback) {
     return new NextResponse("Missing required environment variables", {
