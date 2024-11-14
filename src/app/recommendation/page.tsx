@@ -212,7 +212,7 @@ const RecommendationPage = () => {
                   <HiUserCircle className="w-16 h-16 text-gray-300" />
                 </div>
                 <CardTitle className="text-xl font-bold">
-                  {rec.recommendedUser.bio}
+                  {rec.recommendedUser.name}
                 </CardTitle>
                 <p className="text-gray-400 text-sm">
                   @{rec.recommendedUser.username}
