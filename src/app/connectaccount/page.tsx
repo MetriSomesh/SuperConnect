@@ -59,29 +59,30 @@ export default function ConnectAccount() {
       console.error("Error fetching and saving Twitter profile:", error);
     }
   };
-  const handlePostAndNavigate = async (url: string) => {
-    // Make the POST request
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  // const handlePostAndNavigate = async (url: string) => {
+  //   // Make the POST request
+  //   const response = await fetch(url, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   });
 
-    if (response.ok) {
-      // Navigate after a successful POST request
-      router.push("/dashboard");
-    } else {
-      console.error("POST request failed");
-    }
-  };
+  //   if (response.ok) {
+  //     // Navigate after a successful POST request
+  //     router.push("/dashboard");
+  //   } else {
+  //     console.error("POST request failed");
+  //   }
+  // };
 
   const handleConnectTwitter = async () => {
     const res = await axios.post("/api/twitterauth/auth");
     const url = res.data.url;
 
     if (url) {
-      handlePostAndNavigate(url);
+      // handlePostAndNavigate(url);
+      router.push(url);
     }
   };
 

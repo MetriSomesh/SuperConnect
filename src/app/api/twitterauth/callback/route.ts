@@ -8,10 +8,9 @@ import { NEXT_AUTH } from "@/app/lib/auth";
 
 const prisma = new PrismaClient();
 
-export async function POST(request: NextRequest) {
-  const body = await request.json(); // Parse the JSON body of the POST request
-  const oauth_verifier = body.oauth_verifier;
-  const oauth_token = body.oauth_token;
+export async function GET(request: NextRequest) {
+  const oauth_verifier = request.nextUrl.searchParams.get("oauth_verifier");
+  const oauth_token = request.nextUrl.searchParams.get("oauth_token");
   const session = await getServerSession(NEXT_AUTH);
 
   if (!oauth_verifier || !oauth_token) {
@@ -21,14 +20,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const oauth_consumer_key = "6GUF62tntsp3C3hac2wzL9v94";
+  const oauth_consumer_key = process.env.TWITTERAPIKEY!;
   const oauth_consumer_secret =
     "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
-  const oauth_nonce = crypto.randomBytes(32).toString("hex");
-  const oauth_timestamp = Math.floor(Date.now() / 1000).toString();
   const oauth_signature_method = "HMAC-SHA1";
   const oauth_version = "1.0";
 
+  const res = await axios.post("/api/generateOAuthCreds");
+
+  const oauth_nonce = res.data.oauth_nonce;
+  const oauth_timestamp = res.data.oauth_timestamp;
   const params: Record<string, string> = {
     oauth_consumer_key,
     oauth_token,
