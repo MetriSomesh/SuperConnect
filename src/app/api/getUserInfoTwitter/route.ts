@@ -235,15 +235,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: "Twitter API error",
-          message: error.response?.data || error.message,
+          message: error,
         },
         { status: error.response?.status || 500 }
       );
     }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
