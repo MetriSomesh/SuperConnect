@@ -219,7 +219,7 @@ export async function POST(req: NextRequest) {
     // Handle Twitter API errors
     if (response.status !== 200) {
       return NextResponse.json(
-        { error: "Twitter API error", details: response.data },
+        { error: "Twitter API error", details: response },
         { status: response.status }
       );
     }
