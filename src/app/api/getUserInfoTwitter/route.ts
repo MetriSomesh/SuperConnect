@@ -217,12 +217,12 @@ export async function POST(req: NextRequest) {
     console.log("Response Data:", response.data);
 
     // Handle Twitter API errors
-    // if (response.status !== 200) {
-    //   return NextResponse.json(
-    //     { error: "Twitter API error", details: response.data },
-    //     { status: response.status }
-    //   );
-    // }
+    if (response.status !== 200) {
+      return NextResponse.json(
+        { error: "Twitter API error", details: response.data },
+        { status: response.status }
+      );
+    }
 
     return NextResponse.json(response.data);
   } catch (error) {
