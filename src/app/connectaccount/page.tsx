@@ -42,7 +42,11 @@ export default function ConnectAccount() {
   // Function to fetch and save the Twitter profile
   const fetchAndSaveTwitterProfile = async (token: string) => {
     try {
-      const res = await axios.post("/api/fetchTwitter", { accessToken: token });
+      // const res = await axios.post("/api/fetchTwitter", { accessToken: token });
+      const res = await axios.post("/api/getUserInfoTwitter", {
+        user_id: "1839608237332525056",
+      });
+      console.log("TWITTER USER INFORMATION: ", res.data);
       const twitterData = res.data;
 
       // Save Twitter data to DB

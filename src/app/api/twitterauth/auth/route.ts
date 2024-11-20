@@ -10,7 +10,7 @@ export async function POST() {
   const oauth_consumer_secret =
     "1vxZQ9tWNmGDdzkC2grcvbBWBv3w3LMN02N5hfmbCI2Fpl4LyS";
   const oauth_callback =
-    "https://super-connect-iota.vercel.app/api/twitterauth/callback";
+    "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/api/twitterauth/callback";
 
   if (!oauth_consumer_key || !oauth_consumer_secret || !oauth_callback) {
     return new NextResponse("Missing required environment variables", {

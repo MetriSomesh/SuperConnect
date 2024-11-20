@@ -93,7 +93,7 @@
 //       if (!updateUser) {
 //         await prisma.$disconnect();
 //         return NextResponse.redirect(
-//           "https://super-connect-iota.vercel.app/unsucessful"
+//           "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/unsucessful"
 //         );
 //       }
 
@@ -102,11 +102,11 @@
 //       // session.user.refreshToken = refresh_token;
 
 //       return NextResponse.redirect(
-//         "https://super-connect-iota.vercel.app/connectaccount"
+//         "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/connectaccount"
 //       );
 //     } else {
 //       return NextResponse.redirect(
-//         "https://super-connect-iota.vercel.app/unsucessful"
+//         "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/unsucessful"
 //       );
 //     }
 //   } catch (error) {
@@ -279,16 +279,16 @@ export async function GET(request: NextRequest) {
 
       if (!updateUser) {
         return NextResponse.redirect(
-          "https://super-connect-iota.vercel.app/unsucessful"
+          "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/unsucessful"
         );
       }
 
       return NextResponse.redirect(
-        "https://super-connect-iota.vercel.app/connectaccount"
+        "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/connectaccount"
       );
     } else {
       return NextResponse.redirect(
-        "https://super-connect-iota.vercel.app/unsucessful"
+        "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/unsucessful"
       );
     }
   } catch (error) {

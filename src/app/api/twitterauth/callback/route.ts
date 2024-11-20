@@ -27,7 +27,12 @@ export async function GET(request: NextRequest) {
   const oauth_version = "1.0";
 
   const res = await axios.post(
-    "https://super-connect-iota.vercel.app/api/generateOAuthCreds"
+    "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/api/generateOAuthCreds"
+  );
+
+  console.log(
+    "THIS IS THE TIME STAMP AND THE NONCE WHICH IS GIVEN BY THE API: ",
+    res.data
   );
 
   const oauth_nonce = res.data.oauth_nonce;
@@ -50,11 +55,14 @@ export async function GET(request: NextRequest) {
 
   const signingKey = `${encodeURIComponent(oauth_consumer_secret)}&`;
 
+  console.log("SIGNING KEY: ", signingKey);
+
   const oauth_signature = crypto
     .createHmac("sha1", signingKey)
     .update(baseString)
     .digest("base64");
 
+  console.log("OAUTH SIGNATURE: ", oauth_signature);
   params.oauth_signature = oauth_signature;
 
   try {
@@ -70,6 +78,7 @@ export async function GET(request: NextRequest) {
     );
 
     const parsedResponse = qs.parse(response.data);
+    console.log("ACCESS TOKEN RESPONSE : ", response.data);
     const access_token = parsedResponse.oauth_token?.toString();
     const access_token_secret = parsedResponse.oauth_token_secret?.toString();
 
@@ -88,16 +97,16 @@ export async function GET(request: NextRequest) {
 
       if (!updateUser) {
         return NextResponse.redirect(
-          "https://super-connect-iota.vercel.app/unsucessful"
+          "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/unsucessful"
         );
       }
 
       return NextResponse.redirect(
-        "https://super-connect-iota.vercel.app/connectaccount"
+        "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/connectaccount"
       );
     } else {
       return NextResponse.redirect(
-        "https://super-connect-iota.vercel.app/unsucessful"
+        "   https://8ca8-2401-4900-1c9b-1516-24cf-ce7e-6fb6-ef51.ngrok-free.app/unsucessful"
       );
     }
   } catch (error) {
